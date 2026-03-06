@@ -26,11 +26,22 @@
 			}
 		},
 		{
+			"id": "t1",
+			"type": "templateString",
+			"input": {
+				"sources": [
+					"string1",
+					"string2"
+				],
+				"template": "Sample template: {0} -> {1}"
+			}
+		},
+		{
 			"id": "llm1",
 			"type": "callLLM",
 			"input": {
 				"systemPrompt": "You are a helpful assistant",
-				"userPrompt": "j1",
+				"userPrompt": "t1",
 				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKeyName": "api1",

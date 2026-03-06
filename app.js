@@ -29,8 +29,20 @@ const nodeHandlers = {
 	joinString(node) {
 		const values = node.input.sources.map(id => processNode(id));
 		return values.join(node.input.separator ?? "");
-	}
+	},
 
+	templateString(node) {
+
+		const values = node.input.sources.map(id => processNode(id));
+
+		let result = node.input.template;
+
+		values.forEach((value, index) => {
+			result = result.replaceAll(`{${index}}`, value ?? "");
+		});
+
+		return result;
+	}
 };
 
 function processNode(nodeId, stack = new Set()) {
