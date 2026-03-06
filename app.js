@@ -1,4 +1,6 @@
 import { readFileSync } from "node:fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 const filePath = "./graphs/test.json";
 const graphData = JSON.parse(readFileSync(filePath, "utf-8"));
@@ -11,29 +13,33 @@ const cache = {};
 
 const nodeHandlers = {
 
-	constantString(node) {
+	async constantString(node) {
 		return node.input.string;
 	},
 
-	callLLM(node) {
-		const userPrompt = processNode(node.input.userPrompt);
+	async callLLM(node) {
+		const userPrompt = await processNode(node.input.userPrompt);
 		return `Processed LLM Response: ${userPrompt}`;
 	},
 
-	outputLog(node) {
-		const result = processNode(node.input.source);
+	async outputLog(node) {
+		const result = await processNode(node.input.source);
 		console.log(result);
 		return result;
 	},
 
-	joinString(node) {
-		const values = node.input.sources.map(id => processNode(id));
+	async joinString(node) {
+		const values = await Promise.all(
+			node.input.sources.map(id => processNode(id))
+		);
 		return values.join(node.input.separator ?? "");
 	},
 
-	templateString(node) {
+	async templateString(node) {
 
-		const values = node.input.sources.map(id => processNode(id));
+		const values = await Promise.all(
+			node.input.sources.map(id => processNode(id))
+		);
 
 		let result = node.input.template;
 
@@ -45,7 +51,7 @@ const nodeHandlers = {
 	}
 };
 
-function processNode(nodeId, stack = new Set()) {
+async function processNode(nodeId, stack = new Set()) {
 
 	if (nodeId in cache) {
 		return cache[nodeId];
@@ -66,11 +72,11 @@ function processNode(nodeId, stack = new Set()) {
 	}
 
 	stack.add(nodeId);
-	const result = handler(node);
+	const result = await handler(node);
 	stack.delete(nodeId);
 	cache[nodeId] = result;
 
 	return result;
 }
 
-processNode("out1");
+await processNode("out1").then(console.log).catch(console.error);
