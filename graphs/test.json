@@ -1,0 +1,30 @@
+{
+	"graph": [
+		{
+			"id": "string1",
+			"type": "constantString",
+			"input": {
+				"string": "this is a test"
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "llmProcessor",
+			"input": {
+				"systemPrompt": "You are a helpful assistant",
+				"userPrompt": "string1",
+				"maxTokens": 2048,
+				"temperature": 0.5,
+				"apiKeyName": "api1",
+				"model": "grok-4-1-non-reasoning"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "llm1"
+			}
+		}
+	]
+}
