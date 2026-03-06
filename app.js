@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { callLLm } from "./llm.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -19,7 +20,18 @@ const nodeHandlers = {
 
 	async callLLM(node) {
 		const userPrompt = await processNode(node.input.userPrompt);
-		return `Processed LLM Response: ${userPrompt}`;
+		const systemPrompt = await processNode(node.input.systemPrompt);
+		const llmResponse = await callLLm({
+			test: node.input.testMode ?? false,
+			apiKey: process.env.API_KEY_GROK,
+			baseURL: process.env.BASE_URL_GROK,
+			model: node.input.model ?? "grok-4-1-fast-non-reasoning",
+			systemPrompt: systemPrompt,
+			userPrompt: userPrompt,
+			temperature: node.input.temperature ?? 0.5,
+		});
+
+		return llmResponse.response;
 	},
 
 	async outputLog(node) {
@@ -79,4 +91,4 @@ async function processNode(nodeId, stack = new Set()) {
 	return result;
 }
 
-await processNode("out1").then(console.log).catch(console.error);
+await processNode("out1").catch(console.error);

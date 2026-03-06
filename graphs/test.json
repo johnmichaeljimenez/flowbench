@@ -1,51 +1,30 @@
 {
 	"graph": [
 		{
-			"id": "string1",
+			"id": "systemPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "this is a test"
+				"string": "You are a helpful assistant"
 			}
 		},
 		{
-			"id": "string2",
+			"id": "userPrompt",
 			"type": "constantString",
 			"input": {
 				"string": "how are you?"
 			}
 		},
 		{
-			"id": "j1",
-			"type": "joinString",
-			"input": {
-				"sources": [
-					"string1",
-					"string2"
-				],
-				"separator": "\n"
-			}
-		},
-		{
-			"id": "t1",
-			"type": "templateString",
-			"input": {
-				"sources": [
-					"string1",
-					"string2"
-				],
-				"template": "Sample template: {0} -> {1}"
-			}
-		},
-		{
 			"id": "llm1",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "You are a helpful assistant",
-				"userPrompt": "t1",
+				"systemPrompt": "systemPrompt",
+				"userPrompt": "userPrompt",
+				"testMode": false,
 				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKeyName": "api1",
-				"model": "grok-4-1-non-reasoning"
+				"model": "grok-4-1-fast-non-reasoning"
 			}
 		},
 		{
