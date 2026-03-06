@@ -20,10 +20,12 @@
 			"input": {
 				"systemPrompt": "systemPrompt",
 				"userPrompt": "userPrompt",
-				"testMode": false,
+				"testMode": true,
 				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKeyName": "api1",
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
 				"model": "grok-4-1-fast-non-reasoning"
 			}
 		},

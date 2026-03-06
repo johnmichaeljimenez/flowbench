@@ -23,8 +23,8 @@ const nodeHandlers = {
 		const systemPrompt = await processNode(node.input.systemPrompt);
 		const llmResponse = await callLLm({
 			test: node.input.testMode ?? false,
-			apiKey: process.env.API_KEY_GROK,
-			baseURL: process.env.BASE_URL_GROK,
+			apiKey: process.env[node.input.apiKey],
+			baseURL: process.env[node.input.baseURL],
 			model: node.input.model ?? "grok-4-1-fast-non-reasoning",
 			systemPrompt: systemPrompt,
 			userPrompt: userPrompt,
