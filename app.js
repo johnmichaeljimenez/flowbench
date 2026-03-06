@@ -15,9 +15,8 @@ const nodeHandlers = {
 		return node.input.string;
 	},
 
-	llmProcessor(node) {
+	callLLM(node) {
 		const userPrompt = processNode(node.input.userPrompt);
-
 		return `Processed LLM Response: ${userPrompt}`;
 	},
 
@@ -25,6 +24,11 @@ const nodeHandlers = {
 		const result = processNode(node.input.source);
 		console.log(result);
 		return result;
+	},
+
+	joinString(node) {
+		const values = node.input.sources.map(id => processNode(id));
+		return values.join(node.input.separator ?? "");
 	}
 
 };

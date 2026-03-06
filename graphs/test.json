@@ -8,11 +8,29 @@
 			}
 		},
 		{
+			"id": "string2",
+			"type": "constantString",
+			"input": {
+				"string": "how are you?"
+			}
+		},
+		{
+			"id": "j1",
+			"type": "joinString",
+			"input": {
+				"sources": [
+					"string1",
+					"string2"
+				],
+				"separator": "\n"
+			}
+		},
+		{
 			"id": "llm1",
-			"type": "llmProcessor",
+			"type": "callLLM",
 			"input": {
 				"systemPrompt": "You are a helpful assistant",
-				"userPrompt": "string1",
+				"userPrompt": "j1",
 				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKeyName": "api1",
