@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import path from "node:path";
 import { callLLm } from "./llm.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -16,6 +17,71 @@ const nodeHandlers = {
 
 	async constantString(node) {
 		return node.input.string;
+	},
+
+	async loadTextBlob(node) {
+
+		const basePath = node.input.path;
+
+		const whitelist = (node.input.whitelist ?? "")
+			.split(";")
+			.map(s => s.trim())
+			.filter(Boolean);
+
+		const blacklist = (node.input.blacklist ?? "")
+			.split(";")
+			.map(s => s.trim())
+			.filter(Boolean);
+
+		const files = [];
+
+		function walk(dir) {
+
+			const entries = readdirSync(dir, { withFileTypes: true });
+
+			for (const entry of entries) {
+
+				const fullPath = path.join(dir, entry.name);
+				if (blacklist.some(b => entry.name.includes(b))) {
+					continue;
+				}
+
+				if (entry.isDirectory()) {
+					walk(fullPath);
+					continue;
+				}
+
+				const ext = path.extname(entry.name);
+				if (whitelist.length && !whitelist.includes(ext)) {
+					continue;
+				}
+
+				files.push(fullPath);
+			}
+		}
+
+		walk(basePath);
+
+		let output = "=====FILE START=====\n";
+
+		for (const file of files) {
+
+			let content;
+
+			try {
+				content = readFileSync(file, "utf-8");
+			} catch {
+				continue;
+			}
+
+			output += `===${file}===\n`;
+			output += content;
+			output += "\n\n";
+		}
+
+		output += "=====FILE END=====";
+
+		return output;
 	},
 
 	async callLLM(node) {

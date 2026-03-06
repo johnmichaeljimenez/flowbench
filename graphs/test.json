@@ -9,9 +9,11 @@
 		},
 		{
 			"id": "userPrompt",
-			"type": "constantString",
+			"type": "loadTextBlob",
 			"input": {
-				"string": "how are you?"
+				"path": "E:/projects/flowbench",
+				"whitelist": "Makefile;.c;.js;.cs;.html;.txt",
+				"blacklist": ".gitignore;node_modules;.env"
 			}
 		},
 		{
@@ -33,7 +35,7 @@
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "llm1"
+				"source": "userPrompt"
 			}
 		}
 	]
