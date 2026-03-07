@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { callLLm } from "./llm.js";
 import dotenv from "dotenv";
@@ -70,6 +70,8 @@ const nodeHandlers = {
 
 			try {
 				content = readFileSync(file, "utf-8");
+				if (content.includes("\0")) continue;
+
 			} catch {
 				continue;
 			}
@@ -94,6 +96,7 @@ const nodeHandlers = {
 			model: node.input.model ?? "grok-4-1-fast-non-reasoning",
 			systemPrompt: systemPrompt,
 			userPrompt: userPrompt,
+			maxTokens: node.input.maxTokens ?? 1024,
 			temperature: node.input.temperature ?? 0.5,
 		});
 
@@ -126,6 +129,36 @@ const nodeHandlers = {
 		});
 
 		return result;
+	},
+
+	async writeToTextFile(node) {
+
+		const content = await processNode(node.input.source);
+
+		let filePath = node.input.path;
+
+		if (filePath.includes("{datenow}")) {
+			const now = new Date();
+			const timestamp =
+				`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+				`${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
+
+			filePath = filePath.replaceAll("{datenow}", timestamp);
+		}
+
+		const dir = path.dirname(filePath);
+		mkdirSync(dir, { recursive: true });
+
+		const append = node.input.append ?? false;
+		const encoding = node.input.encoding ?? "utf-8";
+
+		if (append) {
+			appendFileSync(filePath, content ?? "", encoding);
+		} else {
+			writeFileSync(filePath, content ?? "", encoding);
+		}
+
+		return filePath;
 	}
 };
 

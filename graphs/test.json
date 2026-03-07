@@ -8,6 +8,13 @@
 			}
 		},
 		{
+			"id": "testUserPrompt",
+			"type": "constantString",
+			"input": {
+				"string": "What is your model and when is your knowledge cutoff?"
+			}
+		},
+		{
 			"id": "userPrompt",
 			"type": "loadTextBlob",
 			"input": {
@@ -21,11 +28,10 @@
 			"type": "callLLM",
 			"input": {
 				"systemPrompt": "systemPrompt",
-				"userPrompt": "userPrompt",
+				"userPrompt": "testUserPrompt",
 				"testMode": true,
-				"maxTokens": 2048,
+				"maxTokens": 1024,
 				"temperature": 0.5,
-				"apiKeyName": "api1",
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
 				"model": "grok-4-1-fast-non-reasoning"
@@ -33,9 +39,12 @@
 		},
 		{
 			"id": "out1",
-			"type": "outputLog",
+			"type": "writeToTextFile",
 			"input": {
-				"source": "userPrompt"
+				"source": "llm1",
+				"path": "E:/projects/flowbench/graphs/output.md",
+				"append": true,
+				"encoding": "utf-8"
 			}
 		}
 	]
