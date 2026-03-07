@@ -23,7 +23,7 @@
 			"input": {
 				"systemPrompt": "systemPrompt",
 				"userPrompt": "userPrompt",
-				"testMode": true,
+				"testMode": false,
 				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKey": "API_KEY_GROK",
@@ -36,7 +36,7 @@
 			"type": "writeToTextFile",
 			"input": {
 				"source": "llm1",
-				"path": "E:/projects/flowbench/reports/test.md",
+				"path": "E:/projects/flowbench/reports/bored-api.md",
 				"append": false,
 				"encoding": "utf-8"
 			}
