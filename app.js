@@ -152,10 +152,10 @@ const nodeHandlers = {
 
 		const jsonData = await response.json();
 		if (!schema) {
-			return jsonData;
+			return JSON.stringify(jsonData);
 		}
 
-		return applySchema(jsonData, schema);
+		return JSON.stringify(applySchema(jsonData, schema));
 	},
 
 	async templateString(node) {
