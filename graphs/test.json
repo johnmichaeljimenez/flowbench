@@ -4,23 +4,17 @@
 			"id": "systemPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "You are a helpful assistant"
-			}
-		},
-		{
-			"id": "testUserPrompt",
-			"type": "constantString",
-			"input": {
-				"string": "What is your model and when is your knowledge cutoff?"
+				"string": "You are a useful assistant."
 			}
 		},
 		{
 			"id": "userPrompt",
-			"type": "loadTextBlob",
+			"type": "fetchApi",
 			"input": {
-				"path": "E:/projects/flowbench",
-				"whitelist": "Makefile;.c;.js;.cs;.html;.txt",
-				"blacklist": ".gitignore;node_modules;.env"
+				"url": "https://bored-api.appbrewery.com/random",
+				"schema": {
+					"type": "activity"
+				}
 			}
 		},
 		{
@@ -28,9 +22,9 @@
 			"type": "callLLM",
 			"input": {
 				"systemPrompt": "systemPrompt",
-				"userPrompt": "testUserPrompt",
+				"userPrompt": "userPrompt",
 				"testMode": true,
-				"maxTokens": 1024,
+				"maxTokens": 2048,
 				"temperature": 0.5,
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
@@ -41,9 +35,9 @@
 			"id": "out1",
 			"type": "writeToTextFile",
 			"input": {
-				"source": "llm1",
-				"path": "E:/projects/flowbench/graphs/output.md",
-				"append": true,
+				"source": "userPrompt",
+				"path": "E:/projects/flowbench/reports/test.md",
+				"append": false,
 				"encoding": "utf-8"
 			}
 		}
