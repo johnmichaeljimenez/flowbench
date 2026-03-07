@@ -13,6 +13,33 @@ const nodes = Object.fromEntries(
 
 const cache = {};
 
+function applySchema(data, schema) {
+	let result = {};
+
+	for (const key in schema) {
+		if (schema.hasOwnProperty(key)) {
+			const path = schema[key];
+			result[key] = extractFromPath(data, path);
+		}
+	}
+
+	return result;
+}
+
+function extractFromPath(data, path) {
+	const keys = path.split(/\.|\[|\]/).filter(Boolean);
+	let value = data;
+
+	for (let key of keys) {
+		value = value[key];
+		if (value === undefined) {
+			return null;
+		}
+	}
+
+	return value;
+}
+
 const nodeHandlers = {
 
 	async constantString(node) {
@@ -116,6 +143,21 @@ const nodeHandlers = {
 		return values.join(node.input.separator ?? "");
 	},
 
+	async fetchApi(node) {
+		const { url, schema } = node.input;
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch from ${url}`);
+		}
+
+		const jsonData = await response.json();
+		if (!schema) {
+			return jsonData;
+		}
+
+		return applySchema(jsonData, schema);
+	},
+
 	async templateString(node) {
 
 		const values = await Promise.all(
@@ -133,7 +175,10 @@ const nodeHandlers = {
 
 	async writeToTextFile(node) {
 
-		const content = await processNode(node.input.source);
+		let content = await processNode(node.input.source);
+		if (typeof content !== "string") {
+			content = JSON.stringify(content, null, 2);
+		}
 
 		let filePath = node.input.path;
 
