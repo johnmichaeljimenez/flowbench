@@ -55,10 +55,32 @@ const nodeHandlers = {
 			.map(s => s.trim())
 			.filter(Boolean);
 
-		const blacklist = (node.input.blacklist ?? "")
+		const defaultBlacklist = [
+			'node_modules',
+			'.git',
+			'.svn',
+			'.hg',
+			'__pycache__',
+			'.venv',
+			'env',
+			'.env',
+			'.DS_Store',
+			'Thumbs.db',
+			'.nyc_output',
+			'coverage',
+			'.cache',
+			'dist',
+			'build',
+			'bazel-*',
+			'package-lock.json'
+		];
+
+		const userBlacklist = (node.input.blacklist ?? "")
 			.split(";")
 			.map(s => s.trim())
 			.filter(Boolean);
+
+		const blacklist = [...new Set([...defaultBlacklist, ...userBlacklist])];
 
 		const files = [];
 
@@ -69,7 +91,7 @@ const nodeHandlers = {
 			for (const entry of entries) {
 
 				const fullPath = path.join(dir, entry.name);
-				if (blacklist.some(b => entry.name.includes(b))) {
+				if (blacklist.some(b => entry.name.includes(b) || fullPath.includes(b))) {
 					continue;
 				}
 
