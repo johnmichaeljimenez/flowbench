@@ -13,7 +13,7 @@ export async function callLLm({
 }) {
   if (test) {
     return {
-      response: "This is a test",
+      response: `This is a test.\n\nSystem Prompt: ${systemPrompt}\n\nUser Prompt: ${userPrompt}`,
       modelUsed: "test mode",
       tokensUsed: 0,
     };
