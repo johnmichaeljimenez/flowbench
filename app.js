@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, writeFileSync, appendFileSync, mkdirSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, appendFileSync, mkdirSync, existsSync } from "node:fs";
 import path from "node:path";
 import { callLLm } from "./llm.js";
 import xml2js from "xml2js";
@@ -244,6 +244,14 @@ const nodeHandlers = {
 		});
 
 		return result;
+	},
+
+	async readFromTextFile(node) {
+		const filePath = node.input.path;
+		if (!existsSync(filePath))
+			return "";
+		
+		return readFileSync(filePath);
 	},
 
 	async writeToTextFile(node) {
