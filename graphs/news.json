@@ -1,0 +1,43 @@
+{
+	"graph": [
+		{
+			"id": "systemPrompt",
+			"type": "constantString",
+			"input": {
+				"string": "Summarize the news content for me and prioritize only the most important and the most immediate effect for me here in PH."
+			}
+		},
+		{
+			"id": "userPrompt",
+			"type": "fetchRss",
+			"input": {
+				"url": "https://www.philstar.com/rss/headlines",
+				"fields": { "items": ["title", "description"] }
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "systemPrompt",
+				"userPrompt": "userPrompt",
+				"testMode": false,
+				"maxTokens": 2048,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-non-reasoning"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "llm1",
+				"path": "E:/projects/flowbench/reports/news.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	]
+}
