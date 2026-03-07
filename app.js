@@ -250,8 +250,8 @@ const nodeHandlers = {
 		const filePath = node.input.path;
 		if (!existsSync(filePath))
 			return "";
-		
-		return readFileSync(filePath);
+
+		return readFileSync(filePath, "utf-8");
 	},
 
 	async writeToTextFile(node) {
