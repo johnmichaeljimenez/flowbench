@@ -1,0 +1,79 @@
+{
+  "graph": [
+
+    {
+      "id": "systemPrompt",
+      "type": "constantString",
+      "input": {
+        "string": "You are a friendly concise chatbot. Respond conversationally."
+      }
+    },
+
+    {
+      "id": "historyFile",
+      "type": "readFromTextFile",
+      "input": {
+        "path": "E:/projects/flowbench/reports/chat-history.txt"
+      }
+    },
+
+    {
+      "id": "userInput",
+      "type": "constantString",
+      "input": {
+        "string": "What is your model?"
+      }
+    },
+
+    {
+      "id": "promptTemplate",
+      "type": "templateString",
+      "input": {
+        "template": "Conversation so far:\n\n{0}\n\nUser: {1}\nAssistant:",
+        "sources": [
+          "historyFile",
+          "userInput"
+        ]
+      }
+    },
+
+    {
+      "id": "llm1",
+      "type": "callLLM",
+      "input": {
+        "systemPrompt": "systemPrompt",
+        "userPrompt": "promptTemplate",
+        "maxTokens": 512,
+        "temperature": 0.7,
+        "apiKey": "API_KEY_GROK",
+        "baseURL": "BASE_URL_GROK",
+        "model": "grok-4-1-fast-non-reasoning"
+      }
+    },
+
+    {
+      "id": "historyAppend",
+      "type": "templateString",
+      "input": {
+        "template": "{0}\n\nUser: {1}\nAssistant: {2}\n",
+        "sources": [
+          "historyFile",
+          "userInput",
+          "llm1"
+        ]
+      }
+    },
+
+    {
+      "id": "out1",
+      "type": "writeToTextFile",
+      "input": {
+        "source": "historyAppend",
+        "path": "E:/projects/flowbench/reports/chat-history.txt",
+        "append": false,
+        "encoding": "utf-8"
+      }
+    }
+
+  ]
+}
