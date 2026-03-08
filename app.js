@@ -261,6 +261,8 @@ const nodeHandlers = {
 			content = JSON.stringify(content, null, 2);
 		}
 
+		content = content ?? "";
+
 		let filePath = node.input.path;
 
 		if (filePath.includes("{datenow}")) {
@@ -279,12 +281,12 @@ const nodeHandlers = {
 		const encoding = node.input.encoding ?? "utf-8";
 
 		if (append) {
-			appendFileSync(filePath, content ?? "", encoding);
+			appendFileSync(filePath, content, encoding);
 		} else {
-			writeFileSync(filePath, content ?? "", encoding);
+			writeFileSync(filePath, content, encoding);
 		}
 
-		return filePath;
+		return content;
 	}
 };
 
