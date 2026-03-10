@@ -18,7 +18,7 @@
       "id": "sysPrompt",
       "type": "constantString",
       "input": {
-        "string": "You are a friendly, concise chatbot. Answer conversationally. Use memory where appropriate."
+        "string": "You are a friendly, concise chatbot. Answer conversationally. Use memory where appropriate. The date-time is {{:datenow}}"
       }
     },
     {
