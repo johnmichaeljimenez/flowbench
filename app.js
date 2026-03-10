@@ -11,14 +11,14 @@ const __dirname = path.dirname(__filename);
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-    console.error("Usage: node app.js <graph.json> [startNode]");
-    process.exit(1);
+	console.error("Usage: node app.js <graph.json> [startNode]");
+	process.exit(1);
 }
 
 const graphPath = path.resolve(args[0]);
 if (!existsSync(graphPath)) {
-    console.error(`Graph file not found: ${graphPath}`);
-    process.exit(1);
+	console.error(`Graph file not found: ${graphPath}`);
+	process.exit(1);
 }
 
 const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
@@ -361,7 +361,67 @@ const nodeHandlers = {
 		}
 
 		return content;
-	}
+	},
+
+	async tts(node) {
+		const text = await resolveInput(node.input.text);
+		const voiceId = node.input.voiceId;
+		const apiKeyEnv = node.input.apiKey ?? "ELEVENLABS_API_KEY";
+		const outputPath = node.input.outputPath;
+
+		if (!text?.trim()) {
+			throw new Error("No text provided for TTS");
+		}
+		if (!voiceId) {
+			throw new Error("voiceId is required for TTS node");
+		}
+		if (!outputPath) {
+			throw new Error("outputPath is required for TTS node");
+		}
+
+		const apiKey = process.env[apiKeyEnv];
+		if (!apiKey) {
+			throw new Error(`Environment variable ${apiKeyEnv} not found`);
+		}
+
+		const modelId = node.input.modelId ?? "eleven_multilingual_v2";
+		const outputFormat = node.input.outputFormat ?? "mp3_44100_128";
+
+		const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Accept": "audio/mpeg",
+				"xi-api-key": apiKey,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				text: text,
+				model_id: modelId,
+				voice_settings: {
+					stability: node.input.stability ?? 0.5,
+					similarity_boost: node.input.similarityBoost ?? 0.75,
+				},
+				output_format: outputFormat,
+			}),
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text().catch(() => "");
+			throw new Error(`ElevenLabs TTS failed (${response.status}): ${errorText}`);
+		}
+
+		const buffer = await response.arrayBuffer();
+
+		const dir = path.dirname(outputPath);
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(outputPath, Buffer.from(buffer));
+
+		console.log(`TTS audio saved to: ${outputPath}`);
+
+		return outputPath;
+	},
 };
 
 async function processNode(nodeId, stack = new Set()) {
