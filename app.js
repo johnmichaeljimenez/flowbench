@@ -3,10 +3,26 @@ import path from "node:path";
 import { callLLm } from "./llm.js";
 import xml2js from "xml2js";
 import dotenv from "dotenv";
+import { fileURLToPath } from "node:url";
 dotenv.config();
 
-const filePath = "./graphs/flowbench-help.json";
-const graphData = JSON.parse(readFileSync(filePath, "utf-8"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const args = process.argv.slice(2);
+if (args.length === 0) {
+    console.error("Usage: node app.js <graph.json> [startNode]");
+    process.exit(1);
+}
+
+const graphPath = path.resolve(args[0]);
+if (!existsSync(graphPath)) {
+    console.error(`Graph file not found: ${graphPath}`);
+    process.exit(1);
+}
+
+const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
+const startNodeId = args[1] || "out1";
 
 const nodes = Object.fromEntries(
 	graphData.graph.map(node => [node.id, node])
@@ -376,4 +392,4 @@ async function processNode(nodeId, stack = new Set()) {
 	return result;
 }
 
-await processNode("out1").catch(console.error);
+await processNode(startNodeId).catch(console.error);
