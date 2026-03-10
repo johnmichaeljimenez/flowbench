@@ -1,13 +1,18 @@
+#!/usr/bin/env node
+
 import { readFileSync, readdirSync, writeFileSync, appendFileSync, mkdirSync, existsSync } from "node:fs";
 import path from "node:path";
 import { callLLm } from "./llm.js";
 import xml2js from "xml2js";
 import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.resolve(__dirname, '.env')
+});
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
