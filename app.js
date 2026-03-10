@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config({
-  path: path.resolve(__dirname, '.env')
+	path: path.resolve(__dirname, '.env')
 });
 
 const args = process.argv.slice(2);
@@ -46,6 +46,21 @@ function applySchema(data, schema) {
 	}
 
 	return result;
+}
+
+function applyTemplates(str) {
+	if (typeof str !== "string") return str;
+
+	const now = new Date();
+	const templates = {
+		"datenow": `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+				   `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`
+	};
+
+	return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
+		if (key in templates) return templates[key];
+		return `{{:${key}}}`;
+	});
 }
 
 function extractFromPath(data, path) {
@@ -344,15 +359,6 @@ const nodeHandlers = {
 
 		let filePath = node.input.path;
 
-		if (filePath.includes("{datenow}")) {
-			const now = new Date();
-			const timestamp =
-				`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
-				`${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
-
-			filePath = filePath.replaceAll("{datenow}", timestamp);
-		}
-
 		const dir = path.dirname(filePath);
 		mkdirSync(dir, { recursive: true });
 
@@ -442,6 +448,22 @@ async function processNode(nodeId, stack = new Set()) {
 	const node = nodes[nodeId];
 	if (!node) {
 		throw new Error(`Node not found: ${nodeId}`);
+	}
+
+	if (node.input) {
+		for (const key in node.input) {
+			const value = node.input[key];
+			if (typeof value === "string") {
+				node.input[key] = applyTemplates(value);
+			}
+			else if (value && typeof value === "object" && !Array.isArray(value)) {
+				for (const subKey in value) {
+					if (typeof value[subKey] === "string") {
+						value[subKey] = applyTemplates(value[subKey]);
+					}
+				}
+			}
+		}
 	}
 
 	const handler = nodeHandlers[node.type];
