@@ -431,7 +431,7 @@ const nodeHandlers = {
 
 		console.log(`TTS audio saved to: ${outputPath}`);
 
-		return outputPath;
+		return text;
 	},
 };
 
