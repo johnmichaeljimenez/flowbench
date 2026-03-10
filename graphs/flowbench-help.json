@@ -1,0 +1,70 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": "I can run this app (flowbench) in my Windows 10 PC via npm link. Does it mean that I can chain this to other flowbench process via executeShell, or there's more proper way for it?"
+			}
+		},
+		{
+			"id": "blob",
+			"type": "loadTextBlob",
+			"input": {
+				"path": "E:/projects/flowbench",
+				"whitelist": ".js;.json",
+				"blacklist": ".gitignore;node_modules;.env;graphs;package-lock.json;reports"
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "userQuestion",
+				"userPrompt": "blob",
+				"testMode": false,
+				"maxTokens": 2048,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-non-reasoning"
+			}
+		},
+		{
+			"id": "llm1Answer",
+			"type": "templateString",
+			"input": {
+				"template": "User's question:\n{0}\n\n\n==========Assistant's answer:==========\n{1}\n\n\n==========Codebase source to be modified:==========\n{2}",
+				"sources": [
+					"userQuestion",
+					"llm1",
+					"blob"
+				]
+			}
+		},
+		{
+			"id": "llmChecker",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$Check if the Assistant's answer is correct based on user's question and the codebase source. Check for any serious immediate flaws (not theoretical or enterprise-level ones). Show only the answer as output with any corrections and nothing else.",
+				"userPrompt": "llm1Answer",
+				"testMode": false,
+				"maxTokens": 2048,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "llmChecker",
+				"path": "E:/projects/flowbench/reports/flowbench-help.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	]
+}
