@@ -5,7 +5,7 @@ import xml2js from "xml2js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const filePath = "./graphs/test.json";
+const filePath = "./graphs/flowbench-help.json";
 const graphData = JSON.parse(readFileSync(filePath, "utf-8"));
 
 const nodes = Object.fromEntries(
@@ -39,6 +39,14 @@ function extractFromPath(data, path) {
 	}
 
 	return value;
+}
+
+async function resolveInput(input) {
+	if (typeof input === "string" && input.startsWith("$")) {
+		const nodeId = input.slice(1);
+		return nodeId;// await processNode(nodeId);
+	}
+	return await processNode(input);
 }
 
 const nodeHandlers = {
@@ -137,8 +145,8 @@ const nodeHandlers = {
 	},
 
 	async callLLM(node) {
-		const userPrompt = await processNode(node.input.userPrompt);
-		const systemPrompt = await processNode(node.input.systemPrompt);
+		const userPrompt = await resolveInput(node.input.userPrompt);
+		const systemPrompt = await resolveInput(node.input.systemPrompt);
 		const llmResponse = await callLLm({
 			test: node.input.testMode ?? false,
 			apiKey: process.env[node.input.apiKey],
@@ -154,14 +162,14 @@ const nodeHandlers = {
 	},
 
 	async outputLog(node) {
-		const result = await processNode(node.input.source);
+		const result = await resolveInput(node.input.source);
 		console.log(result);
 		return result;
 	},
 
 	async joinString(node) {
 		const values = await Promise.all(
-			node.input.sources.map(id => processNode(id))
+			node.input.sources.map(id => resolveInput(id))
 		);
 		return values.join(node.input.separator ?? "");
 	},
@@ -234,7 +242,7 @@ const nodeHandlers = {
 	async templateString(node) {
 
 		const values = await Promise.all(
-			node.input.sources.map(id => processNode(id))
+			node.input.sources.map(id => resolveInput(id))
 		);
 
 		let result = node.input.template;
@@ -256,7 +264,7 @@ const nodeHandlers = {
 
 	async writeToTextFile(node) {
 
-		let content = await processNode(node.input.source);
+		let content = await resolveInput(node.input.source);
 		if (typeof content !== "string") {
 			content = JSON.stringify(content, null, 2);
 		}
