@@ -78,12 +78,10 @@ function extractFromPath(data, path) {
 }
 
 async function resolveInput(input) {
-	//treat inputs with $ at the start as string literal instead of being an ID reference
 	if (typeof input === "string" && input.startsWith("$")) {
-		const nodeId = input.slice(1);
-		return nodeId;
+		return await processNode(input.slice(1));
 	}
-	return await processNode(input);
+	return input;
 }
 
 const nodeHandlers = {
