@@ -11,8 +11,8 @@
 			"id": "llm1",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "$You are a story generator for a pseudo-documentary. Generate a short high-level pitch based on the given topic. Make it non-ironic and uses normal English words.",
-				"userPrompt": "userPrompt",
+				"systemPrompt": "You are a story generator for a pseudo-documentary. Generate a short high-level pitch based on the given topic. Make it non-ironic and uses normal English words.",
+				"userPrompt": "$userPrompt",
 				"testMode": false,
 				"maxTokens": 2048,
 				"temperature": 0.5,
@@ -22,27 +22,27 @@
 			}
 		},
 		{
-			"id": "out1",
-			"type": "writeToTextFile",
-			"input": {
-				"source": "llm1",
-				"path": "E:/projects/flowbench/reports/story.md",
-				"append": false,
-				"encoding": "utf-8"
-			}
-		},
-		{
 			"id": "tts1",
 			"type": "tts",
 			"input": {
-				"text": "llm1",
-				"voiceId": "2kNWn6KWNBcxf4GSXv5J",
+				"text": "$llm1",
+				"voiceId": "e5WNhrdI30aXpS2RSGm1",
 				"apiKey": "API_KEY_ELEVENLABS", 
-				"outputPath": "elevenlabs/shorts-vo.mp3",
+				"outputPath": "elevenlabs/story-vo.mp3",
 				"modelId": "eleven_v3",
 				"outputFormat": "mp3_44100_128",
 				"stability": 0.4,
 				"similarityBoost": 0.8
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$tts1",
+				"path": "E:/projects/flowbench/reports/story.md",
+				"append": false,
+				"encoding": "utf-8"
 			}
 		}
 	]

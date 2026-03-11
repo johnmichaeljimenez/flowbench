@@ -41,9 +41,9 @@
       "input": {
         "template": "Memory:\n{0}\n\nConversation so far:\n{1}\nUser: {2}\nAssistant:",
         "sources": [
-          "memoryFile",
-          "historyFile",
-          "userInput"
+          "$memoryFile",
+          "$historyFile",
+          "$userInput"
         ]
       }
     },
@@ -51,8 +51,8 @@
       "id": "llmChat",
       "type": "callLLM",
       "input": {
-        "systemPrompt": "sysPrompt",
-        "userPrompt": "chatPrompt",
+        "systemPrompt": "$sysPrompt",
+        "userPrompt": "$chatPrompt",
         "maxTokens": 512,
         "temperature": 0.7,
         "apiKey": "API_KEY_GROK",
@@ -66,9 +66,9 @@
       "input": {
         "template": "Memory before update:\n{0}\n\nLatest conversation:\nUser: {1}\nAssistant: {2}\n\nUpdate the memory with any new or changed facts. Return only KEY=VALUE lines, overwrite keys if needed.",
         "sources": [
-          "memoryFile",
-          "userInput",
-          "llmChat"
+          "$memoryFile",
+          "$userInput",
+          "$llmChat"
         ]
       }
     },
@@ -76,8 +76,8 @@
       "id": "llmMemoryUpdater",
       "type": "callLLM",
       "input": {
-        "systemPrompt": "sysPrompt2",
-        "userPrompt": "memoryUpdatePrompt",
+        "systemPrompt": "$sysPrompt2",
+        "userPrompt": "$memoryUpdatePrompt",
         "maxTokens": 256,
         "temperature": 0.5,
         "apiKey": "API_KEY_GROK",
@@ -89,7 +89,7 @@
       "id": "saveMemory",
       "type": "writeToTextFile",
       "input": {
-        "source": "llmMemoryUpdater",
+        "source": "$llmMemoryUpdater",
         "path": "E:/projects/flowbench/reports/chat-memory.txt",
         "append": false,
         "encoding": "utf-8"
@@ -101,9 +101,9 @@
       "input": {
         "template": "{0}User: {1}\nAssistant: {2}\n\n",
         "sources": [
-          "historyFile",
-          "userInput",
-          "llmChat"
+          "$historyFile",
+          "$userInput",
+          "$llmChat"
         ]
       }
     },
@@ -111,7 +111,7 @@
       "id": "saveHistory",
       "type": "writeToTextFile",
       "input": {
-        "source": "historyAppend",
+        "source": "$historyAppend",
         "path": "E:/projects/flowbench/reports/chat-history.txt",
         "append": false,
         "encoding": "utf-8"
@@ -123,8 +123,8 @@
       "input": {
         "template": "Chat run complete.\n\nMemory updated:\n{0}\n\nHistory updated:\n{1}",
         "sources": [
-          "saveMemory",
-          "saveHistory"
+          "$saveMemory",
+          "$saveHistory"
         ]
       }
     }

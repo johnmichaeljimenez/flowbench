@@ -27,7 +27,7 @@
 			"id": "userPrompt",
 			"type": "joinString",
 			"input": {
-				"sources": [ "news1", "news2" ],
+				"sources": [ "$news1", "$news2" ],
 				"separator": "\n\n\n\n"
 			}
 		},
@@ -35,8 +35,8 @@
 			"id": "llm1",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "systemPrompt",
-				"userPrompt": "userPrompt",
+				"systemPrompt": "$systemPrompt",
+				"userPrompt": "$userPrompt",
 				"testMode": false,
 				"maxTokens": 2048,
 				"temperature": 0.5,
@@ -49,7 +49,7 @@
 			"id": "out1",
 			"type": "writeToTextFile",
 			"input": {
-				"source": "llm1",
+				"source": "$llm1",
 				"path": "E:/projects/flowbench/reports/news_{{:datenow}}.md",
 				"append": false,
 				"encoding": "utf-8"
