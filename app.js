@@ -211,7 +211,14 @@ const nodeHandlers = {
 			temperature: node.input.temperature ?? 0.5,
 		});
 
-		return llmResponse.response;
+		return {
+			value: llmResponse.response,
+			systemPrompt: systemPrompt,
+			userPrompt: userPrompt,
+			modelUsed: llmResponse.model,
+			tokensUsed: llmResponse.tokensUsed,
+			fullPrompt: `${systemPrompt}\n\n\n==========\n\n\n${userPrompt}`
+		};
 	},
 
 	async outputLog(node) {
@@ -448,9 +455,10 @@ const nodeHandlers = {
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(outputPath, Buffer.from(buffer));
 
-		console.log(`TTS audio saved to: ${outputPath}`);
-
-		return text;
+		return {
+			value: text,
+			filePath: outputPath,
+		};
 	},
 };
 
