@@ -508,12 +508,21 @@ async function processNode(nodeId, stack = new Set()) {
 
 async function main() {
 	try {
-		const result = await processNode(startNodeId);
+		let output;
+		if (graphData.entryPoints && Array.isArray(graphData.entryPoints)) {
+			const results = {};
+			for (const entryPoint of graphData.entryPoints) {
+				results[entryPoint] = await processNode(entryPoint);
+			}
+			output = JSON.stringify(results, null, 2);
+		} else {
+			output = await processNode(startNodeId);
+		}
+
 		process.exit(0);
 	} catch (error) {
 		console.error(error.message);
 		process.exit(1);
 	}
 }
-
 main();
