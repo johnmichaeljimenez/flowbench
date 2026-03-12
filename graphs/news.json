@@ -46,13 +46,30 @@
 			}
 		},
 		{
-			"id": "out1",
+			"id": "report",
 			"type": "writeToTextFile",
 			"input": {
 				"source": "$llm1",
 				"path": "E:/projects/flowbench/reports/news_{{:datenow}}.md",
 				"append": false,
 				"encoding": "utf-8"
+			}
+		},
+		{
+			"id": "path",
+			"type": "templateString",
+			"input": {
+				"sources": [
+					"$report.filePath"
+				],
+				"template": "Saved as {0}"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$path"
 			}
 		}
 	]
