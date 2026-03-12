@@ -477,4 +477,15 @@ async function processNode(nodeId, stack = new Set()) {
 	return result;
 }
 
-await processNode(startNodeId).catch(console.error);
+async function main() {
+  try {
+    const result = await processNode(startNodeId);
+    console.log(result);
+    process.exit(0);
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+}
+
+main();
