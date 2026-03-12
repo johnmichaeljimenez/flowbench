@@ -54,7 +54,7 @@ function applyTemplates(str) {
 	const now = new Date();
 	const templates = {
 		"datenow": `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
-				   `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`
+			`${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`
 	};
 
 	return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
@@ -78,10 +78,28 @@ function extractFromPath(data, path) {
 }
 
 async function resolveInput(input) {
-	if (typeof input === "string" && input.startsWith("$")) {
-		return await processNode(input.slice(1));
+	if (typeof input !== "string" || !input.startsWith("$")) {
+		return input;
 	}
-	return input;
+
+	const ref = input.slice(1);
+	const parts = ref.split(".");
+	const nodeId = parts[0];
+	const propertyPath = parts.slice(1).join(".");
+
+	let result = await processNode(nodeId);
+
+	if (propertyPath) {
+		if (result == null || typeof result !== "object") {
+			return undefined;
+		}
+		return extractFromPath(result, propertyPath);
+	}
+
+	if (result && typeof result === "object" && "value" in result) {
+		return result.value;
+	}
+	return result;
 }
 
 const nodeHandlers = {
@@ -369,7 +387,10 @@ const nodeHandlers = {
 			writeFileSync(filePath, content, encoding);
 		}
 
-		return content;
+		return {
+			value: content,
+			filePath: filePath,
+		};
 	},
 
 	async tts(node) {
@@ -478,14 +499,13 @@ async function processNode(nodeId, stack = new Set()) {
 }
 
 async function main() {
-  try {
-    const result = await processNode(startNodeId);
-    console.log(result);
-    process.exit(0);
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
-  }
+	try {
+		const result = await processNode(startNodeId);
+		process.exit(0);
+	} catch (error) {
+		console.error(error.message);
+		process.exit(1);
+	}
 }
 
 main();
