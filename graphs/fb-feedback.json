@@ -1,0 +1,58 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": "What do you think of my project? It's WIP (no frontend yet), but with current state, how competitive do you think it is vs. other pinoy github projects as well as LLM-oriented conferences here in PH? btw I use this tool a lot both personal and at work. and I will use this as my flagship portfolio that I can showcase and use if I will apply for full-time remote work or freelance jobs."
+			}
+		},
+		{
+			"id": "blobString",
+			"type": "loadTextBlob",
+			"input": {
+				"path": "E:/projects/flowbench",
+				"whitelist": ".js;.json",
+				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;llm.js;package.json;fta.json"
+			}
+		},
+		{
+			"id": "llm",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$userQuestion",
+				"userPrompt": "$blobString",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-non-reasoning"
+			}
+		},
+		{
+			"id": "feedbackReport",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$llm",
+				"path": "E:/projects/flowbench/reports/flowbench-feedback.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		},
+		{
+			"id": "blobReport",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$llm.fullPrompt",
+				"path": "E:/projects/flowbench/reports/flowbench-blob.txt",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	],
+	"entryPoints": [
+		"feedbackReport",
+		"blobReport"
+	]
+}
