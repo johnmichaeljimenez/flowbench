@@ -6,6 +6,7 @@ import { callLLm } from "./llm.js";
 import xml2js from "xml2js";
 import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
+import simpleGit from 'simple-git';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -284,10 +285,16 @@ const nodeHandlers = {
 
 		const jsonData = await response.json();
 		if (!schema) {
-			return JSON.stringify(jsonData);
+			return {
+				value: JSON.stringify(jsonData),
+				code: response.status
+			}
 		}
 
-		return JSON.stringify(applySchema(jsonData, schema));
+		return {
+			value: JSON.stringify(applySchema(jsonData, schema)),
+			code: response.status
+		}
 	},
 
 	async executeShell(node) {
@@ -501,6 +508,39 @@ const nodeHandlers = {
 			filePath: outputPath,
 		};
 	},
+
+	async gitListStagedFiles(node) {
+		const repoPath = node.input.repoPath;
+
+		if (!existsSync(repoPath)) {
+			throw new Error(`Git repository path not found: ${repoPath}`);
+		}
+
+		const git = simpleGit(repoPath);
+
+		const status = await git.status();
+		const stagedFiles = status.staged;
+
+		if (!stagedFiles || stagedFiles.length === 0) {
+			return "No files are staged.";
+		}
+
+		let combinedContent = "";
+		for (const file of stagedFiles) {
+			const filePath = path.join(repoPath, file);
+			let content;
+			try {
+				content = readFileSync(filePath, 'utf-8');
+			} catch (error) {
+				console.warn(`Failed to read file ${file}: ${error.message}`);
+				continue;
+			}
+
+			combinedContent += `===== ${file} =====\n${content}`;
+		}
+
+		return combinedContent;
+	}
 };
 
 async function processNode(nodeId, stack = new Set()) {
