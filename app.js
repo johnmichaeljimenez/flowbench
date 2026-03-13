@@ -165,17 +165,20 @@ async function loadNodeHandlers() {
 async function processNode(nodeId, stack = new Set()) {
 
 	if (nodeId in cache) {
+		console.log(`Cache hit at node '${nodeId}'`);
 		return cache[nodeId];
 	}
 
 	if (stack.has(nodeId)) {
-		throw new Error(`Cycle detected at node: ${nodeId}`);
+		throw new Error(`Cycle detected at node '${nodeId}'`);
 	}
 
 	const node = nodes[nodeId];
 	if (!node) {
-		throw new Error(`Node not found: ${nodeId}`);
+		throw new Error(`Node not found: '${nodeId}'`);
 	}
+
+	console.log(`   Processing node '${nodeId}' (${node.type})`);
 
 	if (node.input) {
 		for (const key in node.input) {
@@ -199,9 +202,12 @@ async function processNode(nodeId, stack = new Set()) {
 	}
 
 	stack.add(nodeId);
-	console.log(`Executing node: ${node.type} (${node.id})`);
 	const result = await handler(node);
 	stack.delete(nodeId);
+
+	console.log(`[${nodeId}] ${node.type} completed`);
+	console.log('');
+
 	cache[nodeId] = result;
 
 	return result;
