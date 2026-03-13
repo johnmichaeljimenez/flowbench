@@ -41,6 +41,8 @@ if (!existsSync(graphPath)) {
 	process.exit(1);
 }
 
+process.chdir( path.dirname(graphPath));
+
 const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
 
 const nodes = Object.fromEntries(
