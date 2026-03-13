@@ -94,14 +94,16 @@ function applyParams() {
 function applyTemplates(str) {
 	if (typeof str !== "string") return str;
 
-	const now = new Date();
-	const templates = {
-		"datenow": `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
-			`${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`
-	};
+	if (!global.datenow) {
+		const now = new Date();
+		global.datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+			`${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
+	}
 
 	return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
-		if (key in templates) return templates[key];
+		if (key === 'datenow') {
+			return global.datenow;
+		}
 		return `{{:${key}}}`;
 	});
 }
