@@ -16,8 +16,22 @@ dotenv.config({
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-	console.error("Usage: node app.js <graph.json> [startNode]");
+	console.error('Usage: node app.js <graph.json> [startNode] [--<nodeId>.<inputField> <value>]...');
 	process.exit(1);
+}
+
+const params = {};
+let startNodeId = "out1";
+let paramIndex = 1;
+if (args.length > 1 && !args[1].startsWith('--')) {
+	startNodeId = args[1];
+	paramIndex = 2;
+}
+for (let i = paramIndex; i < args.length; i += 2) {
+	const keyArg = args[i];
+	if (keyArg.startsWith('--') && i + 1 < args.length) {
+		params[keyArg.slice(2)] = args[i + 1];
+	}
 }
 
 const graphPath = path.resolve(args[0]);
@@ -27,7 +41,6 @@ if (!existsSync(graphPath)) {
 }
 
 const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
-const startNodeId = args[1] || "out1";
 
 const nodes = Object.fromEntries(
 	graphData.graph.map(node => [node.id, node])
@@ -46,6 +59,34 @@ function applySchema(data, schema) {
 	}
 
 	return result;
+}
+
+function applyParams() {
+	for (const [paramName, paramValue] of Object.entries(params)) {
+		const parts = paramName.split('.');
+		if (parts.length !== 2) continue;
+
+		const [nodeId, inputField] = parts;
+		if (!nodes[nodeId]) continue;
+
+		// Type coercion
+		let value = paramValue;
+		const num = Number(value);
+		if (!isNaN(num)) {
+			value = num;
+		} else if (value === 'true') {
+			value = true;
+		} else if (value === 'false') {
+			value = false;
+		}
+
+		if (!nodes[nodeId].input) {
+			nodes[nodeId].input = {};
+		}
+		nodes[nodeId].input[inputField] = value;
+
+		console.log(`🔧 Overridden ${nodeId}.input.${inputField} = ${JSON.stringify(value)}`);
+	}
 }
 
 function applyTemplates(str) {
@@ -508,6 +549,8 @@ async function processNode(nodeId, stack = new Set()) {
 
 async function main() {
 	try {
+		applyParams();
+
 		let output;
 		if (graphData.entryPoints && Array.isArray(graphData.entryPoints)) {
 			const results = {};
@@ -526,3 +569,12 @@ async function main() {
 	}
 }
 main();
+
+
+/*
+ * TODO:
+- verbose mode flag (log each node processing step)
+- AI image and video generation node via Grok Imagine API for full content creation suite (+exec nodes with ffmpeg)
+- schema validator (low prio for now)
+- frontend via React Flow (low prio for now)
+ */
