@@ -1,40 +1,36 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveStringList } from "../nodeutils.js";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+
+const defaultBlacklist = [
+	'node_modules',
+	'.git',
+	'.svn',
+	'.hg',
+	'__pycache__',
+	'.venv',
+	'env',
+	'.env',
+	'.DS_Store',
+	'Thumbs.db',
+	'.nyc_output',
+	'coverage',
+	'.cache',
+	'dist',
+	'build',
+	'bazel-*',
+	'package-lock.json'
+];
 
 export default async function loadTextBlob(node) {
 
 	const basePath = await resolveInput(node.input.path);
 
-	const whitelist = (node.input.whitelist ?? "")
-		.split(";")
-		.map(s => s.trim())
-		.filter(Boolean);
+	const rawWhitelist = await resolveInput(node.input.whitelist ?? "");
+	const rawBlacklist = await resolveInput(node.input.blacklist ?? "");
 
-	const defaultBlacklist = [
-		'node_modules',
-		'.git',
-		'.svn',
-		'.hg',
-		'__pycache__',
-		'.venv',
-		'env',
-		'.env',
-		'.DS_Store',
-		'Thumbs.db',
-		'.nyc_output',
-		'coverage',
-		'.cache',
-		'dist',
-		'build',
-		'bazel-*',
-		'package-lock.json'
-	];
-
-	const userBlacklist = (node.input.blacklist ?? "")
-		.split(";")
-		.map(s => s.trim())
-		.filter(Boolean);
+	const whitelist = await resolveStringList(node.input.whitelist);
+	const userBlacklist = await resolveStringList(node.input.blacklist);
 
 	const blacklist = [...new Set([...defaultBlacklist, ...userBlacklist])];
 

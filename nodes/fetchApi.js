@@ -2,7 +2,7 @@ import { resolveInput, applySchema } from "../nodeutils.js";
 
 export default async function fetchApi(node) {
 	const url = await resolveInput(node.input.url);
-	const schema = await resolveInput(node.input.schema);
+	const schema = await resolveInput(node.input.schema ?? null);
 	const response = await fetch(url);
 	if (!response.ok) {
 		throw new Error(`Failed to fetch from ${url}`);

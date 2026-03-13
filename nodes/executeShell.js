@@ -2,7 +2,7 @@ import { resolveInput } from "../nodeutils.js";
 
 export default async function executeShell(node) {
 	const command = await resolveInput(node.input.command);
-	const fireAndForget = node.input.fireAndForget ?? false;
+	const fireAndForget = await resolveInput(node.input.fireAndForget) ?? false;
 
 	const { spawn } = await import('node:child_process');
 

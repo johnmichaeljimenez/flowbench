@@ -3,7 +3,20 @@ import xml2js from "xml2js";
 
 export default async function fetchRss(node) {
 	const url = await resolveInput(node.input.url);
-	const fields = node.input.fields;
+	const rawFields = await resolveInput(node.input.fields ?? null);
+
+	let fieldsConfig = null;
+	if (rawFields) {
+		if (typeof rawFields === 'string') {
+			try {
+				fieldsConfig = JSON.parse(rawFields);
+			} catch {
+				console.warn("fields input looks like invalid JSON → ignored");
+			}
+		} else if (typeof rawFields === 'object' && rawFields !== null) {
+			fieldsConfig = rawFields;
+		}
+	}
 
 	const response = await fetch(url);
 	if (!response.ok) throw new Error(`Failed to fetch ${url}`);
@@ -32,16 +45,16 @@ export default async function fetchRss(node) {
 		items: mappedItems
 	};
 
-	if (fields && typeof fields === "object") {
+	if (fieldsConfig && typeof fieldsConfig === 'object') {
 		return JSON.stringify(Object.entries(fullResult).reduce((acc, [key, value]) => {
-			if (key === "items" && Array.isArray(fields.items)) {
+			if (key === "items" && Array.isArray(fieldsConfig.items)) {
 				acc.items = value.map(v =>
-					fields.items.reduce((subAcc, k) => {
+					fieldsConfig.items.reduce((subAcc, k) => {
 						if (k in v) subAcc[k] = v[k];
 						return subAcc;
 					}, {})
 				);
-			} else if (fields[key]) {
+			} else if (fieldsConfig[key]) {
 				acc[key] = value;
 			}
 			return acc;

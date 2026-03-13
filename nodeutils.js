@@ -28,3 +28,14 @@ export function applySchema(data, schema) {
 	}
 	return applySchemaFn(data, schema);
 }
+
+export async function resolveStringList(inputRef, delimiter = ';', defaultValue = []) {
+	const raw = await resolveInput(inputRef ?? '');
+	if (Array.isArray(raw)) {
+		return raw.map(v => String(v).trim()).filter(Boolean);
+	}
+	if (typeof raw === 'string' && raw.trim()) {
+		return raw.split(delimiter).map(s => s.trim()).filter(Boolean);
+	}
+	return defaultValue;
+}
