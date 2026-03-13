@@ -1,0 +1,35 @@
+{
+	"graph": [
+		{
+			"id": "csvFile",
+			"type": "readFromTextFile",
+			"input": {
+				"path": "./data-2026-03-14_04-30-42.csv"
+			}
+		},
+		{
+			"id": "llm",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Generate a report for market research using the CSV survey provided. Present it in concise form.",
+				"userPrompt": "$csvFile",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.4,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$llm",
+				"path": "./survey-{{:datenow}}.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	]
+}

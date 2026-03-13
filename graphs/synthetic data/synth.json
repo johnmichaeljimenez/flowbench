@@ -11,7 +11,7 @@
 				"temperature": 0.8,
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-reasoning"
+				"model": "grok-4-1-fast-non-reasoning"
 			}
 		},
 		{
