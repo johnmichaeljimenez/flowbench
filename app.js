@@ -528,6 +528,7 @@ const nodeHandlers = {
 		let combinedContent = "";
 		for (const file of stagedFiles) {
 			const filePath = path.join(repoPath, file);
+
 			let content;
 			try {
 				content = readFileSync(filePath, 'utf-8');
@@ -536,7 +537,27 @@ const nodeHandlers = {
 				continue;
 			}
 
-			combinedContent += `===== ${file} =====\n${content}`;
+			const lastCommitContent = await git.show([`HEAD:${file}`]).catch(() => "");
+
+			combinedContent += `===== ${file} =====\n`;
+
+			if (lastCommitContent) {
+				combinedContent += `--- Before Staging (Last Commit) ---\n${lastCommitContent}\n`;
+			} else {
+				combinedContent += "No previous version (new file)\n";
+			}
+
+			combinedContent += `--- After Staging (Staged Content) ---\n${content}\n`;
+
+			if (lastCommitContent && lastCommitContent === content) {
+				combinedContent += "No changes detected between staging and the last commit.\n";
+			}
+
+			if (content.trim() === "") {
+				combinedContent += "This file is empty or contains no content.\n";
+			}
+
+			combinedContent += `====================\n`;
 		}
 
 		return combinedContent;
