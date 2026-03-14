@@ -14,6 +14,7 @@ dotenv.config({
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ type: 'application/json', limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

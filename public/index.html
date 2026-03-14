@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowbench JSON Processor</title>
+</head>
+<body>
+    <h1>Flowbench JSON Processor</h1>
+    
+    <!-- File input -->
+    <input type="file" id="jsonFile" accept=".json" />
+    <button id="sendBtn">Send JSON to /process</button>
+    
+    <pre id="responseOutput"></pre>
+
+    <script>
+        const fileInput = document.getElementById('jsonFile');
+        const sendBtn = document.getElementById('sendBtn');
+        const responseOutput = document.getElementById('responseOutput');
+
+        sendBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a JSON file first.");
+                return;
+            }
+
+            try {
+                // Read the file as text
+                const text = await file.text();
+                const jsonData = JSON.parse(text);
+
+                // Send POST request
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+                responseOutput.textContent = JSON.stringify(result, null, 2);
+            } catch (err) {
+                responseOutput.textContent = "Error: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
