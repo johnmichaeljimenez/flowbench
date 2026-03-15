@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import path from "node:path";
-import { processGraph } from "./engine.js";
+import { processGraph, extractFromPath } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 import generateForm from './forms.js';
 
@@ -23,7 +23,7 @@ app.get('/health', (req, res) => {
 
 app.post('/form', (req, res) => {
     const graph = req.body;
-    const formData = graph.form ?? {};
+    const formData = graph.form ?? [];
 
     let form = generateForm(formData);
     res.send(form);
@@ -33,6 +33,7 @@ app.post('/process', async (req, res) => {
     const graph = req.body;
     const startNode = graph.startNode ?? "out1";
     const params = graph.params ?? {};
+    const outputParams = graph.output ?? [];
 
     if (!graph.graph) {
         return res.status(400).json({ error: 'Missing "graph" property in request body' });
@@ -40,7 +41,21 @@ app.post('/process', async (req, res) => {
 
     try {
         const output = await processGraph(graph, startNode, params);
-        res.json({ result: output });
+
+        let filteredOutput = {};
+        if (outputParams.length > 0) {
+            for (const param of outputParams) {
+                const path = param.id;
+                const value = extractFromPath(output, path);
+                if (value !== null) {
+                    filteredOutput[path] = value;
+                }
+            }
+        } else {
+            filteredOutput = output;
+        }
+
+        console.log(filteredOutput);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });

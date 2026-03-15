@@ -46,7 +46,7 @@ const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
 async function main() {
     try {
         const output = await processGraph(graphData, startNodeId, params);
-        // console.log(JSON.stringify(output, null, 2));
+        console.log(JSON.stringify(output, null, 2));
         process.exit(0);
     } catch (error) {
         console.error(error.message);
@@ -54,11 +54,3 @@ async function main() {
     }
 }
 main();
-
-/*
- * TODO:
-- verbose mode flag (log each node processing step)
-- AI image and video generation node via Grok Imagine API for full content creation suite (+exec nodes with ffmpeg)
-- schema validator (low prio for now)
-- frontend via React Flow (low prio for now)
- */

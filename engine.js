@@ -51,7 +51,7 @@ function applyTemplates(str) {
     });
 }
 
-function extractFromPath(data, path) {
+export function extractFromPath(data, path) {
     const keys = path.split(/\.|\[|\]/).filter(Boolean);
     let value = data;
 
@@ -183,16 +183,15 @@ export async function processGraph(graphData, startNodeId = "out1", params = {})
         applySchema
     });
 
-    let output;
     if (graphData.entryPoints && Array.isArray(graphData.entryPoints)) {
         const results = {};
         for (const entryPoint of graphData.entryPoints) {
             results[entryPoint] = await processNode(entryPoint);
         }
-        output = results;
+        results;
     } else {
-        output = await processNode(startNodeId);
+        await processNode(startNodeId);
     }
 
-    return output;
+    return cache;
 }
