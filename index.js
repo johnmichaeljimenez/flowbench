@@ -42,20 +42,18 @@ app.post('/process', async (req, res) => {
     try {
         const output = await processGraph(graph, startNode, params);
 
-        let filteredOutput = {};
+        let filteredOutput = [];
         if (outputParams.length > 0) {
             for (const param of outputParams) {
                 const path = param.id;
                 const value = extractFromPath(output, path);
                 if (value !== null) {
-                    filteredOutput[path] = value;
+                    filteredOutput.push({ value, ...param });
                 }
             }
-        } else {
-            filteredOutput = output;
         }
 
-        console.log(filteredOutput);
+        return res.json(filteredOutput);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });

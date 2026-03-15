@@ -12,7 +12,7 @@
     <input type="file" id="jsonFile" accept=".json" />
 
     <form id="graphForm" onsubmit="runGraph(event)"> </form>
-    <pre id="responseOutput"></pre>
+    <div id="responseOutput"></div>
 
     <script>
         const fileInput = document.getElementById('jsonFile');
@@ -90,7 +90,27 @@
                 });
 
                 const result = await response.json();
-                responseOutput.textContent = JSON.stringify(result, null, 2);
+
+                responseOutput.innerHTML = "";
+
+                result.forEach(element => {
+                    if (element.type === "text") {
+                        const container = document.createElement("div");
+                        container.innerText = element.name ?? "";
+                        
+                        const copyBtn = document.createElement("button");
+                        copyBtn.innerText = "Copy";
+                        container.appendChild(copyBtn);
+
+                        container.appendChild(document.createElement("hr"));
+                        const txt = document.createElement("p");
+                        txt.innerText = element.value ?? "<EMPTY>";
+                        container.appendChild(txt);
+
+                        responseOutput.appendChild(container);
+                    }
+                });
+
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
             }
