@@ -1,23 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Flowbench JSON Processor</title>
 </head>
+
 <body>
     <h1>Flowbench JSON Processor</h1>
-    
-    <!-- File input -->
+
     <input type="file" id="jsonFile" accept=".json" />
     <button id="sendBtn">Send JSON to /process</button>
-    
+
     <pre id="responseOutput"></pre>
+
+    <form id="graphForm"> </form>
 
     <script>
         const fileInput = document.getElementById('jsonFile');
-        const sendBtn = document.getElementById('sendBtn');
         const responseOutput = document.getElementById('responseOutput');
 
+        function getParams(form) {
+            const params = {};
+
+            for (const element of form.elements) {
+                if (!element.id) continue;
+
+                let value;
+
+                if (element.type === "checkbox") {
+                    value = element.checked;
+                } else if (element.type === "radio") {
+                    if (!element.checked) continue;
+                    value = element.value;
+                } else if (element.tagName.toLowerCase() === "select") {
+                    value = element.value;
+                } else {
+                    value = element.value;
+                }
+
+                params[element.id] = value;
+            }
+
+            return params;
+        }
+
+        fileInput.addEventListener('change', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const jsonData = JSON.parse(text);
+
+                const response = await fetch('/form', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.text();
+                document.getElementById("graphForm").innerHTML = result;
+            } catch (err) {
+                responseOutput.textContent = "Error: " + err.message;
+            }
+        });
+
+        const sendBtn = document.getElementById('sendBtn');
         sendBtn.addEventListener('click', async () => {
             const file = fileInput.files[0];
             if (!file) {
@@ -26,11 +77,10 @@
             }
 
             try {
-                // Read the file as text
                 const text = await file.text();
                 const jsonData = JSON.parse(text);
+                jsonData.params = getParams(document.getElementById("graphForm"));
 
-                // Send POST request
                 const response = await fetch('/process', {
                     method: 'POST',
                     headers: {
@@ -47,4 +97,5 @@
         });
     </script>
 </body>
+
 </html>

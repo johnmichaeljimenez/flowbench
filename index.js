@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "node:path";
 import { processGraph } from "./engine.js";
 import { fileURLToPath } from 'node:url';
+import generateForm from './forms.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,11 +21,21 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.post('/process', async (req, res) => {
-    const { graph, startNode, params } = req.body;
+app.post('/form', (req, res) => {
+    const graph = req.body;
+    const formData = graph.form ?? {};
 
-    if (!graph) {
-        return res.status(400).json({ error: 'Missing "graph" in request body' });
+    let form = generateForm(formData);
+    res.send(form);
+});
+
+app.post('/process', async (req, res) => {
+    const graph = req.body;
+    const startNode = graph.startNode ?? "out1";
+    const params = graph.params ?? {};
+
+    if (!graph.graph) {
+        return res.status(400).json({ error: 'Missing "graph" property in request body' });
     }
 
     try {
