@@ -10,15 +10,14 @@
     <h1>Flowbench JSON Processor</h1>
 
     <input type="file" id="jsonFile" accept=".json" />
-    <button id="sendBtn">Send JSON to /process</button>
 
+    <form id="graphForm" onsubmit="runGraph(event)"> </form>
     <pre id="responseOutput"></pre>
-
-    <form id="graphForm"> </form>
 
     <script>
         const fileInput = document.getElementById('jsonFile');
         const responseOutput = document.getElementById('responseOutput');
+        const graphForm = document.getElementById('graphForm');
 
         function getParams(form) {
             const params = {};
@@ -62,14 +61,15 @@
                 });
 
                 const result = await response.text();
-                document.getElementById("graphForm").innerHTML = result;
+                graphForm.innerHTML = result;
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
             }
         });
 
-        const sendBtn = document.getElementById('sendBtn');
-        sendBtn.addEventListener('click', async () => {
+        async function runGraph(event) {
+            event.preventDefault();
+
             const file = fileInput.files[0];
             if (!file) {
                 alert("Please select a JSON file first.");
@@ -79,7 +79,7 @@
             try {
                 const text = await file.text();
                 const jsonData = JSON.parse(text);
-                jsonData.params = getParams(document.getElementById("graphForm"));
+                jsonData.params = getParams(graphForm);
 
                 const response = await fetch('/process', {
                     method: 'POST',
@@ -94,7 +94,7 @@
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
             }
-        });
+        }
     </script>
 </body>
 
