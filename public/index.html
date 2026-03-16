@@ -19,14 +19,14 @@
         const responseOutput = document.getElementById('responseOutput');
         const graphForm = document.getElementById('graphForm');
 
+        let workingData = null;
+
         function getParams(form) {
             const params = {};
-
             for (const element of form.elements) {
                 if (!element.id) continue;
 
                 let value;
-
                 if (element.type === "checkbox") {
                     value = element.checked;
                 } else if (element.type === "radio") {
@@ -37,11 +37,35 @@
                 } else {
                     value = element.value;
                 }
-
                 params[element.id] = value;
             }
-
             return params;
+        }
+
+        function renderResults() {
+            responseOutput.innerHTML = "";
+
+            if (!workingData.results) return;
+
+            workingData.results.forEach((element, index) => {
+                if (element.type === "text") {
+                    const container = document.createElement("div");
+                    container.innerText = element.name ?? "";
+
+                    const copyBtn = document.createElement("button");
+                    copyBtn.innerText = "Copy";
+                    
+                    copyBtn.onclick = () => navigator.clipboard.writeText(workingData.results[index].value ?? "");
+                    container.appendChild(copyBtn);
+
+                    container.appendChild(document.createElement("hr"));
+                    const txt = document.createElement("p");
+                    txt.innerText = element.value ?? "<EMPTY>";
+                    container.appendChild(txt);
+
+                    responseOutput.appendChild(container);
+                }
+            });
         }
 
         fileInput.addEventListener('change', async () => {
@@ -50,66 +74,49 @@
 
             try {
                 const text = await file.text();
-                const jsonData = JSON.parse(text);
+                workingData = JSON.parse(text); 
+                workingData.results = [];     
 
                 const response = await fetch('/form', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(jsonData)
+                    body: JSON.stringify(workingData)
                 });
 
-                const result = await response.text();
-                graphForm.innerHTML = result;
+                const formHTML = await response.text();
+                graphForm.innerHTML = formHTML;
+                responseOutput.textContent = ""; 
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
+                workingData = null;
             }
         });
 
         async function runGraph(event) {
             event.preventDefault();
 
-            const file = fileInput.files[0];
-            if (!file) {
+            if (!workingData) {
                 alert("Please select a JSON file first.");
                 return;
             }
 
             try {
-                const text = await file.text();
-                const jsonData = JSON.parse(text);
-                jsonData.params = getParams(graphForm);
+                workingData.params = getParams(graphForm);
 
                 const response = await fetch('/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(jsonData)
+                    body: JSON.stringify(workingData)
                 });
 
                 const result = await response.json();
+                workingData.results = result;
 
-                responseOutput.innerHTML = "";
-
-                result.forEach(element => {
-                    if (element.type === "text") {
-                        const container = document.createElement("div");
-                        container.innerText = element.name ?? "";
-                        
-                        const copyBtn = document.createElement("button");
-                        copyBtn.innerText = "Copy";
-                        container.appendChild(copyBtn);
-
-                        container.appendChild(document.createElement("hr"));
-                        const txt = document.createElement("p");
-                        txt.innerText = element.value ?? "<EMPTY>";
-                        container.appendChild(txt);
-
-                        responseOutput.appendChild(container);
-                    }
-                });
+                renderResults();
 
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
