@@ -1,6 +1,6 @@
 import { resolveInput } from "../nodeutils.js";
 
-export default async function joinString(node) {
+export default async function joinString(node, options) {
 
 	const values = await Promise.all(
 		node.input.sources.map(id => resolveInput(id))

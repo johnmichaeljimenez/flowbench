@@ -1,7 +1,7 @@
 import { resolveInput } from "../nodeutils.js";
 import xml2js from "xml2js";
 
-export default async function fetchRss(node) {
+export default async function fetchRss(node, options) {
 	const url = await resolveInput(node.input.url);
 	const rawFields = await resolveInput(node.input.fields ?? null);
 

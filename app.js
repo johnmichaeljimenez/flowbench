@@ -45,7 +45,7 @@ const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
 
 async function main() {
     try {
-        const output = await processGraph(graphData, startNodeId, params);
+        const output = await processGraph(graphData, startNodeId, true, params);
         console.log(JSON.stringify(output, null, 2));
         process.exit(0);
     } catch (error) {

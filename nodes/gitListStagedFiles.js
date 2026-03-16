@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import simpleGit from 'simple-git';
 
-export default async function gitListStagedFiles(node) {
+export default async function gitListStagedFiles(node, options) {
 	const repoPath = await resolveInput(node.input.repoPath);
 
 	if (!existsSync(repoPath)) {

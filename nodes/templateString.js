@@ -1,6 +1,6 @@
 import { resolveInput } from "../nodeutils.js";
 
-export default async function templateString(node) {
+export default async function templateString(node, options) {
 
 	const values = await Promise.all(
 		node.input.sources.map(id => resolveInput(id))

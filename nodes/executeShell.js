@@ -1,6 +1,6 @@
 import { resolveInput } from "../nodeutils.js";
 
-export default async function executeShell(node) {
+export default async function executeShell(node, options) {
 	const command = await resolveInput(node.input.command);
 	const fireAndForget = await resolveInput(node.input.fireAndForget) ?? false;
 

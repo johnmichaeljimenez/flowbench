@@ -92,7 +92,11 @@ function applyParams(nodes, params) {
     }
 }
 
-export async function processGraph(graphData, startNodeId = "out1", params = {}) {
+export async function processGraph(graphData, startNodeId = "out1", localMode = false, params = {}) {
+
+    const options = {
+        localMode: localMode
+    };
 
     const cache = {};
     const nodes = Object.fromEntries(
@@ -164,7 +168,7 @@ export async function processGraph(graphData, startNodeId = "out1", params = {})
         }
 
         processStack.add(nodeId);
-        const result = await handler(node);
+        const result = await handler(node, options);
         processStack.delete(nodeId);
 
         console.log(`[${nodeId}] ${node.type} completed`);

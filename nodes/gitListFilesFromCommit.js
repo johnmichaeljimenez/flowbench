@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import simpleGit from 'simple-git';
 
-export default async function gitListFilesFromCommit(node) {
+export default async function gitListFilesFromCommit(node, options) {
 	const repoPath = await resolveInput(node.input.repoPath);
 	const commitHash = await resolveInput(node.input.commitHash);
 

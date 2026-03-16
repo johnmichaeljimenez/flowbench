@@ -22,7 +22,7 @@ const defaultBlacklist = [
 	'package-lock.json'
 ];
 
-export default async function loadTextBlob(node) {
+export default async function loadTextBlob(node, options) {
 
 	const basePath = await resolveInput(node.input.path);
 

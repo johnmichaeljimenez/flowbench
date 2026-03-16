@@ -2,7 +2,7 @@ import { resolveInput } from "../nodeutils.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-export default async function tts(node) {
+export default async function tts(node, options) {
 	const text = await resolveInput(node.input.text);
 	const voiceId = await resolveInput(node.input.voiceId);
 	const apiKeyEnv = node.input.apiKey ?? "ELEVENLABS_API_KEY";

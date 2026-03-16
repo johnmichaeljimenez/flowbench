@@ -1,7 +1,7 @@
 import { resolveInput } from "../nodeutils.js";
 import { callLLm } from "../llm.js";
 
-export default async function callLLM(node) {
+export default async function callLLM(node, options) {
 	const userPrompt = await resolveInput(node.input.userPrompt);
 	const systemPrompt = await resolveInput(node.input.systemPrompt);
 	const maxTokens = await resolveInput(node.input.maxTokens ?? 1024);

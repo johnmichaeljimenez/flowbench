@@ -40,7 +40,7 @@ app.post('/process', async (req, res) => {
     }
 
     try {
-        const output = await processGraph(graph, startNode, params);
+        const output = await processGraph(graph, startNode, false, params);
 
         let filteredOutput = [];
         if (outputParams.length > 0) {

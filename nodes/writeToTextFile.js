@@ -2,7 +2,7 @@ import { resolveInput } from "../nodeutils.js";
 import { writeFileSync, appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-export default async function writeToTextFile(node) {
+export default async function writeToTextFile(node, options) {
 
 	let content = await resolveInput(node.input.source);
 	if (typeof content !== "string") {
@@ -12,6 +12,8 @@ export default async function writeToTextFile(node) {
 	content = content ?? "";
 
 	let filePath = await resolveInput(node.input.path);
+
+	console.log(options.localMode);
 
 	const dir = path.dirname(filePath);
 	mkdirSync(dir, { recursive: true });
