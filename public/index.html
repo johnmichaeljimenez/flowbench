@@ -54,7 +54,7 @@
 
                     const copyBtn = document.createElement("button");
                     copyBtn.innerText = "Copy";
-                    
+
                     copyBtn.onclick = () => navigator.clipboard.writeText(workingData.results[index].value ?? "");
                     container.appendChild(copyBtn);
 
@@ -64,6 +64,25 @@
                     container.appendChild(txt);
 
                     responseOutput.appendChild(container);
+                } else if (element.type === "downloadText") {
+                    const downloadBtn = document.createElement("button");
+                    downloadBtn.innerText = `Download ${element.name ?? ""}`;
+
+                    downloadBtn.onclick = () => {
+                        const blob = new Blob([element.value ?? ""], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = element.filename ?? "output.txt";
+                        a.click();
+
+                        URL.revokeObjectURL(url);
+                    };
+
+                    responseOutput.appendChild(downloadBtn);
+                } else if (element.type === "mp3") {
+                    //TODO: add button here that downloads mp3 as file per output specified (much better if a playable mp3 on page too using default media player)
                 }
             });
         }
@@ -74,8 +93,8 @@
 
             try {
                 const text = await file.text();
-                workingData = JSON.parse(text); 
-                workingData.results = [];     
+                workingData = JSON.parse(text);
+                workingData.results = [];
 
                 const response = await fetch('/form', {
                     method: 'POST',
@@ -87,7 +106,7 @@
 
                 const formHTML = await response.text();
                 graphForm.innerHTML = formHTML;
-                responseOutput.textContent = ""; 
+                responseOutput.textContent = "";
             } catch (err) {
                 responseOutput.textContent = "Error: " + err.message;
                 workingData = null;
