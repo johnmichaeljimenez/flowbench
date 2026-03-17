@@ -13,18 +13,20 @@ export default async function writeToTextFile(node, options) {
 
 	let filePath = await resolveInput(node.input.path);
 
-	console.log(options.localMode);
+	if (options.localMode) {
+		const dir = path.dirname(filePath);
+		mkdirSync(dir, { recursive: true });
 
-	const dir = path.dirname(filePath);
-	mkdirSync(dir, { recursive: true });
+		const append = node.input.append ?? false;
+		const encoding = node.input.encoding ?? "utf-8";
 
-	const append = node.input.append ?? false;
-	const encoding = node.input.encoding ?? "utf-8";
-
-	if (append) {
-		appendFileSync(filePath, content, encoding);
-	} else {
-		writeFileSync(filePath, content, encoding);
+		if (append) {
+			appendFileSync(filePath, content, encoding);
+		} else {
+			writeFileSync(filePath, content, encoding);
+		}
+	}else{
+		console.log(`Local mode disabled for '${node.id}', skipping file writing`);
 	}
 
 	return {
