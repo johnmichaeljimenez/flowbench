@@ -1,0 +1,39 @@
+{
+	"graph": [
+		{
+			"id": "out1",
+			"type": "tts",
+			"input": {
+				"text": "This is a test",
+				"voiceId": "e5WNhrdI30aXpS2RSGm1",
+				"apiKey": "API_KEY_ELEVENLABS",
+				"outputPath": "./vo/vo-{{:datenow}}.mp3",
+				"modelId": "eleven_v3",
+				"outputFormat": "mp3_44100_128",
+				"stability": 0.4,
+				"similarityBoost": 0.8
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "out1.text",
+			"name": "Voice line",
+			"value": "Hello",
+			"type": "textfield",
+			"required": true
+		}
+	],
+	"output": [
+		{
+			"id": "out1.audioBase64",
+			"type": "audio",
+			"name": "Generated Dialogue"
+		},
+		{
+			"id": "out1.value",
+			"type": "text",
+			"name": "Dialogue"
+		}
+	]
+}
