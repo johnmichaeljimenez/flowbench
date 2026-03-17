@@ -3,11 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Flowbench JSON Processor</title>
+    <title>Flowbench</title>
 </head>
 
 <body>
-    <h1>Flowbench JSON Processor</h1>
+    <h1>Flowbench</h1>
 
     <input type="file" id="jsonFile" accept=".json" />
 
@@ -21,13 +21,34 @@
 
         let workingData = null;
 
-        function getParams(form) {
+        async function getParams(form) {
             const params = {};
             for (const element of form.elements) {
                 if (!element.id) continue;
 
+                //add uploadText here
                 let value;
-                if (element.type === "checkbox") {
+                if (element.type === "file") {
+                    const file = element.files[0];
+                    if (file) {
+                        try {
+                            const text = await file.text();  
+                            value = text;
+
+                            // nice feedback
+                            const statusEl = document.getElementById(element.id + '-status');
+                            if (statusEl) {
+                                statusEl.textContent = `✓ Loaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                                statusEl.style.color = "#28a745";
+                            }
+                        } catch (err) {
+                            console.error("Failed to read file:", err);
+                            throw new Error(`Could not read file: ${file.name}`);
+                        }
+                    } else if (element.required) {
+                        throw new Error(`Please upload a file for "${element.id}"`);
+                    }
+                } else if (element.type === "checkbox") {
                     value = element.checked;
                 } else if (element.type === "radio") {
                     if (!element.checked) continue;
@@ -137,7 +158,9 @@
             }
 
             try {
-                workingData.params = getParams(graphForm);
+                workingData.params = await getParams(graphForm);
+
+            console.log(workingData.params);
 
                 const response = await fetch('/process', {
                     method: 'POST',
