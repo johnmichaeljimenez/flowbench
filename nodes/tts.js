@@ -51,14 +51,24 @@ export default async function tts(node, options) {
 		throw new Error(`ElevenLabs TTS failed (${response.status}): ${errorText}`);
 	}
 
-	const buffer = await response.arrayBuffer();
+	const arrayBuffer = await response.arrayBuffer();
+	const audioBuffer = Buffer.from(arrayBuffer);
+	const base64Audio = audioBuffer.toString("base64");
 
-	const dir = path.dirname(outputPath);
-	mkdirSync(dir, { recursive: true });
-	writeFileSync(outputPath, Buffer.from(buffer));
+	if (options.localMode) {
+		const dir = path.dirname(outputPath);
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(outputPath, audioBuffer);
+		console.log(`TTS file written: ${outputPath}`);
+	} else {
+		console.log(`Local mode disabled for '${node.id}', skipping file write (base64 returned for browser)`);
+	}
 
 	return {
 		value: text,
 		filePath: outputPath,
+		audioBase64: base64Audio,
+		mimeType: "audio/mpeg",
+		filename: path.basename(outputPath) || "tts.mp3"
 	};
 }
