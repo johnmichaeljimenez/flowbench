@@ -97,28 +97,6 @@
                     audio.src = `data:${element.mimeType || "audio/mpeg"};base64,${element.value || element.audioBase64}`;
                     container.appendChild(audio);
 
-                    const downloadBtn = document.createElement("button");
-                    downloadBtn.innerText = "Download MP3";
-                    downloadBtn.style.marginTop = "8px";
-                    downloadBtn.onclick = () => {
-                        const base64 = element.value || element.audioBase64;
-                        const byteCharacters = atob(base64);
-                        const byteArray = new Uint8Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteArray[i] = byteCharacters.charCodeAt(i);
-                        }
-                        const blob = new Blob([byteArray], { type: "audio/mpeg" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = element.filename || "audio.mp3";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    };
-                    container.appendChild(downloadBtn);
-
                     responseOutput.appendChild(container);
                 }
             });
