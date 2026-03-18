@@ -165,8 +165,6 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
 
     validateGraph(graphData);
 
-    const processStack = new Set();
-
     async function resolveInput(input) {
         if (typeof input !== "string" || !input.startsWith("$")) {
             return input;
@@ -198,10 +196,6 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
             return cache[nodeId];
         }
 
-        if (processStack.has(nodeId)) {
-            throw new Error(`Cycle detected at node '${nodeId}'`);
-        }
-
         const node = nodes[nodeId];
         if (!node) {
             throw new Error(`Node not found: '${nodeId}'`);
@@ -229,15 +223,12 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
             throw new Error(`Unknown node type: ${node.type}`);
         }
 
-        processStack.add(nodeId);
         const result = await handler(node, options);
-        processStack.delete(nodeId);
 
         console.log(`[${nodeId}] ${node.type} completed`);
         console.log('');
 
         cache[nodeId] = result;
-
         return result;
     }
 
