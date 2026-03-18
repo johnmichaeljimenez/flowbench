@@ -33,7 +33,7 @@ app.post('/process', async (req, res) => {
     const graph = req.body;
     const startNode = graph.startNode ?? "out1";
     const params = graph.params ?? {};
-    const outputParams = graph.output ?? [];
+    const outputParams = graph.output?.cards ?? [];
 
     if (!graph.graph) {
         return res.status(400).json({ error: 'Missing "graph" property in request body' });
