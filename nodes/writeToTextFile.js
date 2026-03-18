@@ -26,6 +26,8 @@ export default async function writeToTextFile(node, options) {
 		} else {
 			writeFileSync(filePath, content, encoding);
 		}
+		
+		console.log(`Write text file to ${filePath}`);
 	} else {
 		console.log(`Local mode disabled for '${node.id}', skipping file writing`);
 	}
