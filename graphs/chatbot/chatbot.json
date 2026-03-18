@@ -1,17 +1,31 @@
 {
   "graph": [
     {
+      "id": "pathHistory",
+      "type": "constantString",
+      "input": {
+        "string": "./graphs/chatbot/history.txt"
+      }
+    },
+    {
+      "id": "pathMemory",
+      "type": "constantString",
+      "input": {
+        "string": "./graphs/chatbot/memory.txt"
+      }
+    },
+    {
       "id": "historyFile",
       "type": "readFromTextFile",
       "input": {
-        "path": "E:/projects/flowbench/reports/chat-history.txt"
+        "path": "$pathHistory"
       }
     },
     {
       "id": "memoryFile",
       "type": "readFromTextFile",
       "input": {
-        "path": "E:/projects/flowbench/reports/chat-memory.txt"
+        "path": "$pathMemory"
       }
     },
     {
@@ -90,9 +104,10 @@
       "type": "writeToTextFile",
       "input": {
         "source": "$llmMemoryUpdater",
-        "path": "E:/projects/flowbench/reports/chat-memory.txt",
+        "path": "$pathMemory",
         "append": false,
-        "encoding": "utf-8"
+        "encoding": "utf-8",
+        "forceWrite": true
       }
     },
     {
@@ -112,9 +127,10 @@
       "type": "writeToTextFile",
       "input": {
         "source": "$historyAppend",
-        "path": "E:/projects/flowbench/reports/chat-history.txt",
+        "path": "$pathHistory",
         "append": false,
-        "encoding": "utf-8"
+        "encoding": "utf-8",
+        "forceWrite": true
       }
     },
     {
@@ -128,5 +144,23 @@
         ]
       }
     }
-  ]
+  ],
+  "form": [
+    {
+      "id": "userInput.string",
+      "name": "Enter inquiry",
+      "value": null,
+      "type": "textfield",
+      "required": true
+    }
+  ],
+  "output": {
+    "cards": [
+      {
+        "id": "llmChat.value",
+        "type": "text",
+        "name": "Chat"
+      }
+    ]
+  }
 }
