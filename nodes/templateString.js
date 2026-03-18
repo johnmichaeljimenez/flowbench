@@ -13,4 +13,16 @@ export default async function templateString(node, options) {
 	});
 
 	return result;
-}
+};
+
+export const nodeMetadata = {
+	type: "templateString",
+	name: "Template String",
+	description: "Builds text by filling {0}, {1}... placeholders from sources.",
+	category: "Utility",
+	inputs: {
+		template: { type: "string", required: true, supportsRef: true },
+		sources: { type: "array", required: true, supportsRef: true }
+	},
+	outputs: ["value"]
+};

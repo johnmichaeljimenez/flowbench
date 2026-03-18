@@ -25,7 +25,7 @@ export default async function writeToTextFile(node, options) {
 		} else {
 			writeFileSync(filePath, content, encoding);
 		}
-	}else{
+	} else {
 		console.log(`Local mode disabled for '${node.id}', skipping file writing`);
 	}
 
@@ -33,4 +33,18 @@ export default async function writeToTextFile(node, options) {
 		value: content,
 		filePath: filePath,
 	};
-}
+};
+
+export const nodeMetadata = {
+	type: "writeToTextFile",
+	name: "Write Text File",
+	description: "Saves content to a file (create or append mode).",
+	category: "File",
+	inputs: {
+		source: { type: "string", required: true, supportsRef: true },
+		path: { type: "string", required: true, supportsRef: true },
+		append: { type: "boolean", required: false, default: false },
+		encoding: { type: "string", required: false, default: "utf-8" }
+	},
+	outputs: ["value", "filePath"]
+};

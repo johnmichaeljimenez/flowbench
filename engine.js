@@ -7,19 +7,79 @@ import { initNodeUtils } from "./nodeutils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const nodeHandlers = await (async () => {  
-    const handlers = {};  
-    const nodesDir = path.join(__dirname, "nodes");  
-    const files = readdirSync(nodesDir);  
-    for (const file of files) {  
-        if (!file.endsWith(".js")) continue;  
-        const nodeType = path.basename(file, ".js");  
-        const modulePath = path.join(nodesDir, file);  
-        const module = await import(pathToFileURL(modulePath).href);  
-        handlers[nodeType] = module.default;  
-    }  
-    return handlers;  
-})();  
+const nodeRegistry = {};
+
+const nodeHandlers = await (async () => {
+    const handlers = {};
+    const nodesDir = path.join(__dirname, "nodes");
+    const files = readdirSync(nodesDir);
+    for (const file of files) {
+        if (!file.endsWith(".js")) continue;
+        const nodeType = path.basename(file, ".js");
+        const modulePath = path.join(nodesDir, file);
+        const module = await import(pathToFileURL(modulePath).href);
+        handlers[nodeType] = module.default;
+
+        if (module.nodeMetadata) {
+            nodeRegistry[nodeType] = module.nodeMetadata;
+        } else {
+            console.warn(`Node ${nodeType} has no nodeMetadata. Validation skipped`);
+        }
+    }
+    return handlers;
+})();
+
+function validateGraph(graphData) {
+    if (!graphData.graph || !Array.isArray(graphData.graph)) {
+        throw new Error("Graph must have a 'graph' array");
+    }
+
+    const nodeIds = new Set();
+    for (const node of graphData.graph) {
+        if (!node.id || !node.type) {
+            throw new Error(`Node missing id or type: ${JSON.stringify(node)}`);
+        }
+        if (nodeIds.has(node.id)) {
+            throw new Error(`Duplicate node id: ${node.id}`);
+        }
+        nodeIds.add(node.id);
+
+        const meta = nodeRegistry[node.type];
+        if (!meta) {
+            throw new Error(`Unknown node type: ${node.type}`);
+        }
+
+        const input = node.input || {};
+        for (const [key, spec] of Object.entries(meta.inputs)) {
+            if (spec.required && !(key in input)) {
+                throw new Error(`Missing required input "${key}" in node ${node.id} (${node.type})`);
+            }
+            if (key in input) {
+                const value = input[key];
+                if (spec.type === "number" && typeof value !== "number") {
+                    throw new Error(`Input "${key}" in ${node.id} must be number`);
+                }
+                if (spec.type === "boolean" && typeof value !== "boolean") {
+                    throw new Error(`Input "${key}" in ${node.id} must be boolean`);
+                }
+            }
+        }
+    }
+
+    for (const node of graphData.graph) {
+        for (const val of Object.values(node.input || {})) {
+            if (typeof val === "string" && val.startsWith("$")) {
+                const refId = val.slice(1).split(".")[0];
+                if (!nodeIds.has(refId)) {
+                    throw new Error(`Broken reference $ ${refId} in node ${node.id}`);
+                }
+            }
+        }
+    }
+
+    console.log("Graph validation passed");
+    return true;
+}
 
 function applySchema(data, schema) {
     let result = {};
@@ -102,6 +162,8 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     const nodes = Object.fromEntries(
         graphData.graph.map(node => [node.id, node])
     );
+
+    validateGraph(graphData);
 
     const processStack = new Set();
 

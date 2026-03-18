@@ -71,4 +71,22 @@ export default async function tts(node, options) {
 		mimeType: "audio/mpeg",
 		filename: path.basename(outputPath) || "tts.mp3"
 	};
-}
+};
+
+export const nodeMetadata = {
+	type: "tts",
+	name: "Text to Speech",
+	description: "Converts text to spoken audio using ElevenLabs (returns base64 + file).",
+	category: "Integration",
+	inputs: {
+		text: { type: "string", required: true, supportsRef: true },
+		voiceId: { type: "string", required: true, supportsRef: true },
+		apiKey: { type: "string", required: true, description: "Env var name" },
+		outputPath: { type: "string", required: true, supportsRef: true },
+		modelId: { type: "string", required: false, default: "eleven_v3" },
+		outputFormat: { type: "string", required: false, default: "mp3_44100_128" },
+		stability: { type: "number", required: false, default: 0.5 },
+		similarityBoost: { type: "number", required: false, default: 0.75 }
+	},
+	outputs: ["value", "filePath", "audioBase64", "filename"]
+};

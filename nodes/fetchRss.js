@@ -62,4 +62,16 @@ export default async function fetchRss(node, options) {
 	}
 
 	return JSON.stringify(fullResult);
-}
+};
+
+export const nodeMetadata = {
+	type: "fetchRss",
+	name: "Fetch RSS",
+	description: "Fetches and parses an RSS feed into clean JSON.",
+	category: "Integration",
+	inputs: {
+		url: { type: "string", required: true, supportsRef: true },
+		fields: { type: "object", required: false, supportsRef: false, description: "Optional fields to extract" }
+	},
+	outputs: ["value"]
+};

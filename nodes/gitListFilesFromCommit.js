@@ -52,4 +52,16 @@ export default async function gitListFilesFromCommit(node, options) {
 	}
 
 	return combinedContent;
-}
+};
+
+export const nodeMetadata = {
+	type: "gitListFilesFromCommit",
+	name: "Git List Files From Commit",
+	description: "Extracts file contents from a specific git commit.",
+	category: "Git",
+	inputs: {
+		repoPath: { type: "string", required: true, supportsRef: true },
+		commitHash: { type: "string", required: true, supportsRef: true }
+	},
+	outputs: ["value"]
+};

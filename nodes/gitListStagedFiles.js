@@ -55,4 +55,15 @@ export default async function gitListStagedFiles(node, options) {
 	}
 
 	return combinedContent;
-}
+};
+
+export const nodeMetadata = {
+	type: "gitListStagedFiles",
+	name: "Git List Staged Files",
+	description: "Shows all staged files with before/after content for quick review.",
+	category: "Git",
+	inputs: {
+		repoPath: { type: "string", required: true, supportsRef: true }
+	},
+	outputs: ["value"]
+};

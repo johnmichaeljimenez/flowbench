@@ -84,3 +84,16 @@ export default async function loadTextBlob(node, options) {
 
 	return output;
 };
+
+export const nodeMetadata = {
+	type: "loadTextBlob",
+	name: "Load Text Blob",
+	description: "Recursively loads many text files into one huge blob.",
+	category: "File",
+	inputs: {
+		path: { type: "string", required: true, supportsRef: true, description: "Root folder path" },
+		whitelist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names  separated by semicolon e.g. .js;.json;.md" },
+		blacklist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names separated by semicolon e.g. .js;.json;.md" }
+	},
+	outputs: ["value"]
+};

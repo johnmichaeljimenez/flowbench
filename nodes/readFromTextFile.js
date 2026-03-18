@@ -8,3 +8,14 @@ export default async function readFromTextFile(node, options) {
 
 	return readFileSync(filePath, "utf-8");
 }
+
+export const nodeMetadata = {
+	type: "readFromTextFile",
+	name: "Read Text File",
+	description: "Reads the entire content of a single text file.",
+	category: "File",
+	inputs: {
+		path: { type: "string", required: true, supportsRef: true }
+	},
+	outputs: ["value"]
+};

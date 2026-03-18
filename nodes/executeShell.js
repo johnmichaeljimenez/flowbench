@@ -47,4 +47,16 @@ export default async function executeShell(node, options) {
 			resolve(`Error: ${err.message}`);
 		});
 	});
-}
+};
+
+export const nodeMetadata = {
+	type: "executeShell",
+	name: "Execute Shell",
+	description: "Runs any shell command (use with caution).",
+	category: "Utility",
+	inputs: {
+		command: { type: "string", required: true, supportsRef: true },
+		fireAndForget: { type: "boolean", required: false, default: false }
+	},
+	outputs: ["value"]
+};
