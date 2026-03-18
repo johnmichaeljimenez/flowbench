@@ -3,6 +3,7 @@ import { writeFileSync, appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 export default async function writeToTextFile(node, options) {
+	const forceWrite = node.input.forceWrite === true;
 
 	let content = await resolveInput(node.input.source);
 	if (typeof content !== "string") {
@@ -13,7 +14,7 @@ export default async function writeToTextFile(node, options) {
 
 	let filePath = await resolveInput(node.input.path);
 
-	if (options.localMode) {
+	if (options.localMode || forceWrite) {
 		const dir = path.dirname(filePath);
 		mkdirSync(dir, { recursive: true });
 
@@ -44,7 +45,8 @@ export const nodeMetadata = {
 		source: { type: "string", required: true, supportsRef: true },
 		path: { type: "string", required: true, supportsRef: true },
 		append: { type: "boolean", required: false, default: false },
-		encoding: { type: "string", required: false, default: "utf-8" }
+		encoding: { type: "string", required: false, default: "utf-8" },
+		forceWrite: { type: "boolean", required: false, default: true }
 	},
 	outputs: ["value", "filePath"]
 };
