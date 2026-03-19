@@ -29,31 +29,50 @@ export async function callLLm({
     baseURL,
   });
 
-  const params = {
-    model,
-    messages: [
-      { role: "system", content: systemPrompt.trim() },
-      { role: "user", content: userPrompt },
-    ],
-    temperature,
-    max_tokens: maxTokens,
-    top_p: topP,
-  };
-
   if (useTools) {
-    params.tools = [
-      { type: "web_search" },
-      { type: "x_search" },
-      // { type: "code_interpreter" },
-    ];
-    params.tool_choice = "auto";
+    const completion = await client.responses.create({
+      model,
+      input: [
+        { role: "system", content: systemPrompt.trim() },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [
+        { type: "web_search" },
+        { type: "x_search" },
+      ],
+      temperature,
+      max_output_tokens: maxTokens,
+      top_p: topP,
+      tool_choice: "auto",
+    });
+
+    let responseText = "";
+    if (completion.output && completion.output.length > 0) {
+      const lastItem = completion.output[completion.output.length - 1];
+      responseText = lastItem.content?.[0]?.text?.trim() || "";
+    }
+
+    return {
+      response: responseText,
+      modelUsed: model,
+      tokensUsed: completion.usage?.total_tokens ?? "unknown",
+    };
+  } else {
+    const completion = await client.chat.completions.create({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt.trim() },
+        { role: "user", content: userPrompt },
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      top_p: topP,
+    });
+
+    return {
+      response: completion.choices?.[0]?.message?.content?.trim() || "",
+      modelUsed: model,
+      tokensUsed: completion.usage?.total_tokens ?? "unknown",
+    };
   }
-
-  const completion = await client.chat.completions.create(params);
-
-  return {
-    response: completion.choices?.[0]?.message?.content?.trim() || "",
-    modelUsed: model,
-    tokensUsed: completion.usage?.total_tokens ?? "unknown",
-  };
 }
