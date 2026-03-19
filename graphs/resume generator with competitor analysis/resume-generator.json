@@ -1,0 +1,127 @@
+{
+  "graph": [
+    {
+      "id": "scrapNotes",
+      "type": "loadTextBlob",
+      "input": {
+        "path": "E:/notes",
+        "whitelist": ".txt;.md",
+        "blacklist": ".env;node_modules;.git"
+      }
+    },
+    {
+      "id": "resumePrompt",
+      "type": "constantString",
+      "input": {
+        "string": "You are an expert resume writer (ATS-optimized, modern style, 1-page when printed). Turn this messy collection of scrap notes into a clean, professional resume in Markdown format for a software developer applicant.\n\nRules:\n- Use clear sections: Professional Summary, Skills, Work Experience (with bullet points and achievements), Projects, Education\n- Highlight leadership, technical depth, and any unique achievements\n- Quantify where possible\n- Output ONLY the Markdown resume, no explanations."
+      }
+    },
+    {
+      "id": "generateResume",
+      "type": "callLLM",
+      "input": {
+        "systemPrompt": "$resumePrompt",
+        "userPrompt": "$scrapNotes",
+        "maxTokens": 4096,
+        "temperature": 0.3,
+        "apiKey": "API_KEY_GROK",
+        "baseURL": "BASE_URL_GROK",
+        "model": "grok-4-1-fast-reasoning"
+      }
+    },
+    {
+      "id": "evalPrompt",
+      "type": "templateString",
+      "input": {
+        "template": "Raw scrap notes:\n\n{0}\n\n\n\nInitial resume draft:\n{1}",
+        "sources": ["$scrapNotes", "$generateResume"]
+      }
+    },
+    {
+      "id": "evaluator",
+      "type": "callLLM",
+      "input": {
+        "systemPrompt": "You are a 2026 job market researcher specializing in software and game development roles. Compare this resume + raw notes against other applicants in the same field. Highlight top selling points, weaknesses, realistic salary range, and what makes this candidate stand out. Use your tools (web search / X search) if needed for current market data. Then give specific, actionable improvements for the final resume.",
+        "userPrompt": "$evalPrompt",
+        "maxTokens": 4096,
+        "temperature": 0.3,
+        "apiKey": "API_KEY_GROK",
+        "baseURL": "BASE_URL_GROK",
+        "model": "grok-4-1-fast-reasoning",
+        "useTools": true
+      }
+    },
+    {
+      "id": "cleanupPrompt",
+      "type": "templateString",
+      "input": {
+        "template": "Raw scrap notes:\n\n{0}\n\n\n\nMarket research & competitor analysis:\n{1}\n\n\n\nInitial resume draft:\n{2}",
+        "sources": ["$scrapNotes", "$evaluator", "$generateResume"]
+      }
+    },
+    {
+      "id": "cleanup",
+      "type": "callLLM",
+      "input": {
+        "systemPrompt": "You are an expert resume writer. Using the market research and competitor analysis, produce the final polished resume. Fix any inaccuracies, strengthen weak areas, and keep it to 1 page when printed. Output ONLY the finished Markdown resume, no explanations.",
+        "userPrompt": "$cleanupPrompt",
+        "maxTokens": 4096,
+        "temperature": 0.25,
+        "apiKey": "API_KEY_GROK",
+        "baseURL": "BASE_URL_GROK",
+        "model": "grok-4-1-fast-reasoning"
+      }
+    },
+    {
+      "id": "saveResume",
+      "type": "writeToTextFile",
+      "input": {
+        "source": "$cleanup",
+        "path": "E:/projects/flowbench/graphs/resume generator with competitor analysis/.temp/my-resume-{{:datenow}}.md",
+        "append": false,
+        "forceWrite": true
+      }
+    },
+    {
+      "id": "saveEval",
+      "type": "writeToTextFile",
+      "input": {
+        "source": "$evaluator",
+        "path": "E:/projects/flowbench/graphs/resume generator with competitor analysis/.temp/eval-{{:datenow}}.md",
+        "append": false,
+        "forceWrite": true
+      }
+    },
+    {
+      "id": "out1",
+      "type": "outputLog",
+      "input": {
+        "source": "✅ Resume + Market Research complete!\n\nSaved resume: .temp/my-resume-{{:datenow}}.md\nSaved analysis: .temp/eval-{{:datenow}}.md"
+      }
+    }
+  ],
+  "form": [
+    {
+      "id": "scrapNotes.path",
+      "name": "Folder with your scrap notes (txt/md files)",
+      "value": "E:/notes",
+      "type": "textfield",
+      "required": true
+    }
+  ],
+  "entryPoints": ["saveResume", "saveEval", "out1"],
+  "output": {
+    "cards": [
+      {
+        "id": "cleanup.value",
+        "type": "text",
+        "name": "Final Resume (Markdown)"
+      },
+      {
+        "id": "evaluator.value",
+        "type": "text",
+        "name": "Market Research & Competitor Analysis"
+      }
+    ]
+  }
+}
