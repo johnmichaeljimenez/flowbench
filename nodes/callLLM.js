@@ -7,6 +7,7 @@ export default async function callLLM(node, options) {
 	const maxTokens = await resolveInput(node.input.maxTokens ?? 1024);
 	const temperature = await resolveInput(node.input.temperature ?? 0.5);
 	const testMode = await resolveInput(node.input.testMode ?? false);
+	const useTools = await resolveInput(node.input.useTools ?? false);
 
 	const llmResponse = await callLLm({
 		test: testMode,
@@ -16,7 +17,8 @@ export default async function callLLM(node, options) {
 		systemPrompt: systemPrompt,
 		userPrompt: userPrompt,
 		maxTokens: maxTokens,
-		temperature: temperature
+		temperature: temperature,
+		useTools: useTools
 	});
 
 	return {
@@ -42,7 +44,8 @@ export const nodeMetadata = {
 		testMode: { type: "boolean", required: false, default: false },
 		apiKey: { type: "string", required: true, description: "Env var name (e.g. API_KEY_GROK)", default: "API_KEY_GROK" },
 		baseURL: { type: "string", required: true, description: "Env var name (e.g. BASE_URL_GROK)", default: "BASE_URL_GROK" },
-		model: { type: "string", required: false, default: "grok-4-1-fast-non-reasoning" }
+		model: { type: "string", required: false, default: "grok-4-1-fast-non-reasoning" },
+		useTools: { type: "boolean", required: false, default: false, description: "(For xAI) Use xAI tools as auto if set to true (ex. web search and X search). WARNING: Costs more when enabled." }
 	},
 	outputs: ["value", "fullPrompt", "modelUsed", "tokensUsed"]
 };

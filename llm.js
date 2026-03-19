@@ -10,6 +10,7 @@ export async function callLLm({
   temperature = 0.7,
   maxTokens = 1024,
   topP = 0.9,
+  useTools = false //for xAI
 }) {
   if (test) {
     return {
@@ -28,7 +29,7 @@ export async function callLLm({
     baseURL,
   });
 
-  const completion = await client.chat.completions.create({
+  const params = {
     model,
     messages: [
       { role: "system", content: systemPrompt.trim() },
@@ -37,7 +38,18 @@ export async function callLLm({
     temperature,
     max_tokens: maxTokens,
     top_p: topP,
-  });
+  };
+
+  if (useTools) {
+    params.tools = [
+      { type: "web_search" },
+      { type: "x_search" },
+      // { type: "code_interpreter" },
+    ];
+    params.tool_choice = "auto";
+  }
+
+  const completion = await client.chat.completions.create(params);
 
   return {
     response: completion.choices?.[0]?.message?.content?.trim() || "",
