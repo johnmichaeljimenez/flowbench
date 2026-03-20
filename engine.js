@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { fileURLToPath } from 'node:url';
 import { initNodeUtils } from "./nodeutils.js";
+import nodeNotifier from "node-notifier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -153,6 +154,9 @@ function applyParams(nodes, params) {
 }
 
 export async function processGraph(graphData, startNodeId = "out1", localMode = false, params = {}) {
+    const meta = graphData.meta ?? {
+        notifyOnEnd: false
+    };
 
     const options = {
         localMode: localMode
@@ -249,6 +253,9 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     } else {
         await processNode(startNodeId);
     }
+
+    if (meta.notifyOnEnd)
+        nodeNotifier.notify(`Flowbench done processing!`);
 
     return cache;
 }
