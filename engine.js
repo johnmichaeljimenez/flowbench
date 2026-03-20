@@ -153,6 +153,24 @@ function applyParams(nodes, params) {
     }
 }
 
+function applyInputDefaults(nodes) {
+    for (const node of Object.values(nodes)) {
+        const meta = nodeRegistry[node.type];
+        if (!meta?.inputs) continue;
+
+        if (!node.input) {
+            node.input = {};
+        }
+
+        for (const [key, spec] of Object.entries(meta.inputs)) {
+            if (!(key in node.input) && 'default' in spec) {
+                node.input[key] = spec.default;
+                console.log(`Applied default: ${node.id}.input.${key} = ${JSON.stringify(spec.default)}`);
+            }
+        }
+    }
+}
+
 export async function processGraph(graphData, startNodeId = "out1", localMode = false, params = {}) {
     const meta = graphData.meta ?? {
         notifyOnEnd: false
@@ -237,6 +255,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     }
 
     applyParams(nodes, params);
+    applyInputDefaults(nodes);
 
     initNodeUtils({
         resolveInput,
