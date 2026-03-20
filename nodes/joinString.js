@@ -2,7 +2,7 @@ import { resolveInput } from "../nodeutils.js";
 import path from "path";
 
 export default async function joinString(node, options) {
-	const fileSeparatorMode = node.input.fileSeparator === true;
+	const fileSeparatorMode = node.input.fileSeparator === true;  //FIXME: might be too redundant anyway if forward slash is already forgiving in Node.js at any OS
 
 	const values = await Promise.all(
 		node.input.sources.map(id => resolveInput(id))

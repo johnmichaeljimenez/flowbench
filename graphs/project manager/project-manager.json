@@ -1,10 +1,10 @@
 {
 	"graph": [
 		{
-			"id": "projectOutputName",
+			"id": "projectPath",
 			"type": "constantString",
 			"input": {
-				"string": "project-report-{{:datenow}}.md"
+				"string": ""
 			}
 		},
 		{
@@ -15,58 +15,55 @@
 			}
 		},
 		{
-			"id": "projectDesc",
-			"type": "joinString",
+			"id": "projectOutputName",
+			"type": "constantString",
 			"input": {
+				"string": "project-report-{{:datenow}}.md"
+			}
+		},
+		{
+			"id": "descPath",
+			"type": "templateString",
+			"input": {
+				"template": "{0}/project-description.txt",
+				"sources": [
+					"$projectDescPath"
+				]
+			}
+		},
+		{
+			"id": "todoPath",
+			"type": "templateString",
+			"input": {
+				"template": "{0}/TODO.txt",
+				"sources": [
+					"$projectDescPath"
+				]
+			}
+		},
+		{
+			"id": "reportPath",
+			"type": "templateString",
+			"input": {
+				"template": "{0}/reports/{1}",
 				"sources": [
 					"$projectDescPath",
-					"project-description.txt"
-				],
-				"fileSeparator": true
+					"$projectOutputName"
+				]
 			}
 		},
 		{
 			"id": "projectDescString",
 			"type": "readFromTextFile",
 			"input": {
-				"path": "$projectDesc"
-			}
-		},
-		{
-			"id": "projectTodo",
-			"type": "joinString",
-			"input": {
-				"sources": [
-					"$projectDescPath",
-					"TODO.txt"
-				],
-				"fileSeparator": true
+				"path": "$descPath"
 			}
 		},
 		{
 			"id": "projectTodoString",
 			"type": "readFromTextFile",
 			"input": {
-				"path": "$projectTodo"
-			}
-		},
-		{
-			"id": "projectDescOutput",
-			"type": "joinString",
-			"input": {
-				"sources": [
-					"$projectDescPath",
-					"reports",
-					"$projectOutputName"
-				],
-				"fileSeparator": true
-			}
-		},
-		{
-			"id": "projectPath",
-			"type": "constantString",
-			"input": {
-				"string": ""
+				"path": "$todoPath"
 			}
 		},
 		{
@@ -94,10 +91,9 @@
 			"id": "projectManager",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "You are an extremely honest, strategic, and experienced project manager for a personal solo coding project. Today is {{:datenow}}. Analyze the full context and write a professional detailed status report with these exact sections only:\n\n1. Overall Status (On Track / Slipping / Ahead of schedule / what are the TODO tasks that are already done and existing on the code)\n2. Key Strengths + Comparison to other relevant Github repo projects\n3. Weaknesses & Risks (relevant to the scope)\n4. Priority Tasks for the next 7 days (with realistic deadlines and why they matter)\n5. Personal Performance Score (1-10) + detailed honest explanation.\nUse bullet points.",
+				"systemPrompt": "You are an extremely honest, strategic, and experienced project manager for a personal solo coding project. Today is {{:datenow}}. Analyze the full context and write a professional detailed status report with these exact sections only:\n\n1. Overall Status (On Track / Slipping / Ahead of schedule / what TODO tasks are already done and existing in the code)\n2. Key Strengths + Comparison to other relevant Github repo projects\n3. Weaknesses & Risks (relevant to the scope)\n4. Priority Tasks for the next 7 days (with realistic deadlines and why they matter)\n5. Personal Performance Score (1-10) + detailed honest explanation.\nUse bullet points.",
 				"userPrompt": "$combinedPrompt",
 				"maxTokens": 4096,
-				"testMode": false,
 				"temperature": 0.5,
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
@@ -110,7 +106,7 @@
 			"type": "writeToTextFile",
 			"input": {
 				"source": "$projectManager",
-				"path": "$projectDescOutput",
+				"path": "$reportPath",
 				"append": false,
 				"forceWrite": true
 			}
@@ -119,7 +115,7 @@
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "✅ Project Manager Report generated!\nSaved as: project-report-{{:datenow}}.md"
+				"source": "✅ Project Manager Report generated!\nSaved as: reports/project-report-{{:datenow}}.md"
 			}
 		}
 	],
@@ -146,7 +142,7 @@
 	"output": {
 		"cards": [
 			{
-				"id": "saveReport.value",
+				"id": "projectManager.value",
 				"type": "text",
 				"name": "Project Status Report"
 			}

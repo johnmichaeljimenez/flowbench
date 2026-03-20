@@ -249,7 +249,6 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
         for (const entryPoint of graphData.entryPoints) {
             results[entryPoint] = await processNode(entryPoint);
         }
-        results;
     } else {
         await processNode(startNodeId);
     }
