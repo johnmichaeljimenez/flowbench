@@ -4,6 +4,7 @@ const responseOutput = document.getElementById('responseOutput');
 const graphForm = document.getElementById('graphForm');
 
 let workingData = null;
+let running = false;
 
 loadGraphLink.addEventListener('click', (event) => {
 	event.preventDefault();
@@ -150,6 +151,9 @@ fileInput.addEventListener('change', async () => {
 async function runGraph(event) {
 	event.preventDefault();
 
+	if (running)
+		return;
+
 	if (!workingData) {
 		alert("Please select a JSON file first.");
 		return;
@@ -157,6 +161,10 @@ async function runGraph(event) {
 
 	if (!confirm("Run this graph?"))
 		return;
+
+	const submitBtn = document.getElementById("form-submit");
+	submitBtn.classList.add("is-loading");
+	running = true;
 
 	try {
 		workingData.params = await getParams(graphForm);
@@ -177,5 +185,8 @@ async function runGraph(event) {
 
 	} catch (err) {
 		responseOutput.textContent = "Error: " + err.message;
+	} finally {
+		submitBtn.classList.remove("is-loading");
+		running = false;
 	}
 }

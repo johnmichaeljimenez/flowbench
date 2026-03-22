@@ -67,6 +67,6 @@ export default function generateForm(formData) {
 		}
 	});
 
-	form += `\n\n<input type="submit" class="button is-primary">`;
+	form += `\n\n<button type="submit" id="form-submit" class="button is-primary">Submit</button>`;
 	return form;
 }
