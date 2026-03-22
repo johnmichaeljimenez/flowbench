@@ -2,10 +2,11 @@ import { resolveInput } from "../nodeutils.js";
 
 export default async function choose(node, options) {
     const condition = await resolveInput(node.input.condition ?? false);
-    const trueSource = await resolveInput(node.input.trueSource);
-    const falseSource = await resolveInput(node.input.falseSource);
+    const branchRef = Boolean(condition) 
+        ? node.input.trueSource 
+        : node.input.falseSource;
 
-    const chosen = Boolean(condition) ? trueSource : falseSource;
+    const chosen = await resolveInput(branchRef);
 
     return {
         value: chosen,
