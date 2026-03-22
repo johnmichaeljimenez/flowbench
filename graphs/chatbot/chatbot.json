@@ -4,14 +4,14 @@
       "id": "pathHistory",
       "type": "constantString",
       "input": {
-        "string": "./graphs/chatbot/history.txt"
+        "string": "./graphs/chatbot/.temp/history.txt"
       }
     },
     {
       "id": "pathMemory",
       "type": "constantString",
       "input": {
-        "string": "./graphs/chatbot/memory.txt"
+        "string": "./graphs/chatbot/.temp/memory.txt"
       }
     },
     {
@@ -71,7 +71,8 @@
         "temperature": 0.7,
         "apiKey": "API_KEY_GROK",
         "baseURL": "BASE_URL_GROK",
-        "model": "grok-4-1-fast-non-reasoning"
+        "model": "grok-4-1-fast-reasoning",
+        "useTools": true
       }
     },
     {
@@ -114,7 +115,7 @@
       "id": "historyAppend",
       "type": "templateString",
       "input": {
-        "template": "{0}User: {1}\nAssistant: {2}\n\n",
+        "template": "{0}\n==========\nUser: {1}\nAssistant: {2}\n\n",
         "sources": [
           "$historyFile",
           "$userInput",
@@ -151,7 +152,8 @@
       "name": "Enter inquiry",
       "value": null,
       "type": "textfield",
-      "required": true
+      "required": true,
+      "autoclear": true
     }
   ],
   "output": {
