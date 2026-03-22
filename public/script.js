@@ -1,9 +1,14 @@
-
+const loadGraphLink = document.getElementById('loadGraph');
 const fileInput = document.getElementById('jsonFile');
 const responseOutput = document.getElementById('responseOutput');
 const graphForm = document.getElementById('graphForm');
 
 let workingData = null;
+
+loadGraphLink.addEventListener('click', (event) => {
+	event.preventDefault();
+	fileInput.click();
+});
 
 async function getParams(form) {
 	const params = {};
@@ -125,6 +130,17 @@ fileInput.addEventListener('change', async () => {
 		const formHTML = await response.text();
 		graphForm.innerHTML = formHTML;
 		responseOutput.textContent = "";
+
+		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
+			const filenameEl = document.getElementById(`${input.id}-filename`);
+			if (filenameEl) {
+				input.addEventListener('change', () => {
+					filenameEl.textContent = input.files[0]
+						? input.files[0].name
+						: 'No file selected';
+				});
+			}
+		});
 	} catch (err) {
 		responseOutput.textContent = "Error: " + err.message;
 		workingData = null;

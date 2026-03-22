@@ -7,15 +7,24 @@
 
     <title>Flowbench</title>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
 </head>
 
-<body>
+<body style="padding-top: 2rem;">
     <section class="section">
-        <div class="container">
-            <h1>Flowbench</h1>
+        <nav class="navbar has-shadow mb-4 is-fixed-top" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <span class="navbar-item has-text-weight-semibold">
+                    Flowbench
+                </span>
+            </div>
 
-            <input type="file" id="jsonFile" accept=".json" />
+            <a href="#" id="loadGraph" class="navbar-item">Load Graph</a>
+            <input type="file" id="jsonFile" accept=".json" style="display: none;" />
+        </nav>
+
+        <div class="container">
 
             <form id="graphForm" onsubmit="runGraph(event)"> </form>
             <div id="responseOutput"></div>
