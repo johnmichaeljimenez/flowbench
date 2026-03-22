@@ -6,8 +6,8 @@ export default async function callLLM(node, options) {
 	const systemPrompt = await resolveInput(node.input.systemPrompt);
 	const maxTokens = await resolveInput(node.input.maxTokens ?? 1024);
 	const temperature = await resolveInput(node.input.temperature ?? 0.5);
-	const testMode = await resolveInput(node.input.testMode ?? false);
-	const useTools = await resolveInput(node.input.useTools ?? false);
+	const testMode = Boolean(await resolveInput(node.input.testMode ?? false));
+	const useTools = Boolean(await resolveInput(node.input.useTools ?? false));
 
 	const llmResponse = await callLLm({
 		test: testMode,
