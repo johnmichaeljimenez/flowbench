@@ -56,6 +56,11 @@ function renderResults() {
 
 	if (!workingData.results) return;
 
+	for (const e of graphForm.elements) {
+		if (e.dataset.autoclear === "true")
+			e.value = null;
+	}
+
 	workingData.results.forEach((element, index) => {
 		if (element.type === "text") {
 			const container = document.createElement("div");
