@@ -4,7 +4,9 @@ function textfield(element) {
 			${element.name || ""}:
 		</label>
 		<div class="control">
-			<input class="input" type="text" id="${element.id}" value="${element.value || ""}" ${element.required ? "required" : ""}>
+			<input class="input" type="text" id="${element.id}" value="${element.value || ""}"
+			${element.required ? "required" : ""}
+			${element.autoclear ? 'data-autoclear="true"' : ""}>
 		</div>
   		<p class="help">${element.description ?? ""}</p>
 	`;
@@ -44,13 +46,52 @@ function uploadText(element) {
 	`;
 }
 
+function dropdown(element) {
+	let optionsHTML = '';
+
+	(element.data || []).forEach(option => {
+		let value = '';
+		let display = '';
+
+		if (typeof option === 'string') {
+			value = display = option;
+		} else if (option && typeof option === 'object') {
+			if (option.value !== undefined) {
+				value = option.value;
+				display = option.display || option.text || option.label || value;
+			}
+		}
+
+		const isSelected = (element.defaultValue === value || element.value === value) ? ' selected' : '';
+		optionsHTML += `<option value="${value}"${isSelected}>${display}</option>`;
+	});
+
+	return `
+		<label class="label" for="${element.id}">
+			${element.name || "Select option"}:
+		</label>
+		<div class="control">
+			<div class="select is-fullwidth">
+				<select 
+          id="${element.id}" 
+          name="${element.id}"
+          ${element.required ? "required" : ""}>
+					${optionsHTML}
+				</select>
+			</div>
+		</div>
+  		<p class="help">${element.description ?? ""}</p>
+	`;
+}
+
 export default function generateForm(formData) {
 	let form = "";
 
 	const typeMap = {
 		textfield,
 		separator,
-		uploadText
+		uploadText,
+		dropdown
 	};
 
 	formData.forEach(element => {
