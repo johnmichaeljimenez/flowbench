@@ -155,6 +155,9 @@ async function runGraph(event) {
 		return;
 	}
 
+	if (!confirm("Run this graph?"))
+		return;
+
 	try {
 		workingData.params = await getParams(graphForm);
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import path from "node:path";
-import { processGraph, extractFromPath } from "./engine.js";
+import { processGraph, extractFromPath, validateGraph } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 import generateForm from './forms.js';
 
@@ -24,6 +24,8 @@ app.get('/health', (req, res) => {
 app.post('/form', (req, res) => {
     const graph = req.body;
     const formData = graph.form ?? [];
+    
+    validateGraph(graph);
 
     let form = generateForm(formData);
     res.send(form);
