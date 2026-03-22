@@ -98,7 +98,7 @@
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
 				"model": "grok-4-1-fast-reasoning",
-				"useTools": true
+				"useTools": false
 			}
 		},
 		{
@@ -132,6 +132,23 @@
 			"name": "Project description & specs folder",
 			"value": "E:/flowbench/project-desc",
 			"type": "textfield",
+			"required": true
+		},
+		{
+			"type": "dropdown",
+			"id": "projectManager.useTools",
+			"name": "Use Realtime Search",
+			"data": [
+				{
+					"value": "true",
+					"display": "Yes"
+				},
+				{
+					"value": "false",
+					"display": "No"
+				}
+			],
+			"defaultValue": "true",
 			"required": true
 		}
 	],
