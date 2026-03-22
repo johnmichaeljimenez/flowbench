@@ -1,3 +1,6 @@
+const { Marked } = globalThis.marked;
+const { markedHighlight } = globalThis.markedHighlight;
+
 const loadGraphLink = document.getElementById('loadGraph');
 const fileInput = document.getElementById('jsonFile');
 const responseOutput = document.getElementById('responseOutput');
@@ -5,6 +8,21 @@ const graphForm = document.getElementById('graphForm');
 
 let workingData = null;
 let running = false;
+
+const markedWithHighlight = new Marked(
+	{
+		gfm: true,
+		breaks: true
+	},
+	markedHighlight({
+		emptyLangClass: 'hljs',
+		langPrefix: 'hljs language-',
+		highlight(code, lang) {
+			const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+			return hljs.highlight(code, { language }).value;
+		}
+	})
+);
 
 loadGraphLink.addEventListener('click', (event) => {
 	event.preventDefault();
@@ -78,9 +96,13 @@ function renderResults() {
 			container.appendChild(document.createElement("hr"));
 			const txt = document.createElement("div");
 			if (element.markdown)
-				txt.innerHTML = marked.parse(element.value)
+				txt.innerHTML = markedWithHighlight.parse(element.value)
 			else
 				txt.innerText = element.value ?? "<EMPTY>";
+			
+			txt.querySelectorAll("table").forEach(table => {
+				table.classList.add("table", "is-bordered", "is-striped", "is-hoverable", "is-fullwidth");
+			});
 			container.appendChild(txt);
 
 			responseOutput.appendChild(container);
