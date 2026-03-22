@@ -30,7 +30,7 @@ const nodeHandlers = await (async () => {
     return handlers;
 })();
 
-function validateGraph(graphData) {
+export function validateGraph(graphData) {
     if (!graphData.graph || !Array.isArray(graphData.graph)) {
         throw new Error("Graph must have a 'graph' array");
     }
@@ -214,7 +214,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
 
     async function processNode(nodeId) {
         if (nodeId in cache) {
-            console.log(`Cache hit at node '${nodeId}'`);
+            console.log(`Cache hit at node '${nodeId}'`); //if cycle is detected, simply return the cached value immediately, since a lot of graphs are expected to reuse and share nodes with each other.
             return cache[nodeId];
         }
 
@@ -246,12 +246,13 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
         }
 
         const result = await handler(node, options);
+        const normalized = result && typeof result === "object" && "value" in result
+            ? result
+            : { value: result };
+        cache[nodeId] = normalized;
 
         console.log(`[${nodeId}] ${node.type} completed`);
-        console.log('');
-
-        cache[nodeId] = result;
-        return result;
+        return normalized;
     }
 
     applyParams(nodes, params);

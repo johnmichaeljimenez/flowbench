@@ -1,5 +1,7 @@
 export default async function constantString(node, options) {
-	return node.input.string;
+	return {
+		value: node.input.string
+	}
 };
 
 export const nodeMetadata = {

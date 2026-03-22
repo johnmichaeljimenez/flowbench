@@ -13,7 +13,9 @@ export default async function joinString(node, options) {
 		separator = path.sep;
 	}
 
-	return values.join(separator);
+	return {
+		value: values.join(separator)
+	};
 };
 
 export const nodeMetadata = {

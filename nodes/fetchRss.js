@@ -46,22 +46,26 @@ export default async function fetchRss(node, options) {
 	};
 
 	if (fieldsConfig && typeof fieldsConfig === 'object') {
-		return JSON.stringify(Object.entries(fullResult).reduce((acc, [key, value]) => {
-			if (key === "items" && Array.isArray(fieldsConfig.items)) {
-				acc.items = value.map(v =>
-					fieldsConfig.items.reduce((subAcc, k) => {
-						if (k in v) subAcc[k] = v[k];
-						return subAcc;
-					}, {})
-				);
-			} else if (fieldsConfig[key]) {
-				acc[key] = value;
-			}
-			return acc;
-		}, {}));
+		return {
+			value: JSON.stringify(Object.entries(fullResult).reduce((acc, [key, value]) => {
+				if (key === "items" && Array.isArray(fieldsConfig.items)) {
+					acc.items = value.map(v =>
+						fieldsConfig.items.reduce((subAcc, k) => {
+							if (k in v) subAcc[k] = v[k];
+							return subAcc;
+						}, {})
+					);
+				} else if (fieldsConfig[key]) {
+					acc[key] = value;
+				}
+				return acc;
+			}, {}))
+		};
 	}
 
-	return JSON.stringify(fullResult);
+	return {
+		value: JSON.stringify(fullResult)
+	}
 };
 
 export const nodeMetadata = {

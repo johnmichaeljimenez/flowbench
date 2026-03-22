@@ -14,7 +14,10 @@ export default async function readFromTextFile(node, options) {
 		throw new Error(`File not found: ${filePath}`);
 	}
 
-	return readFileSync(filePath, "utf-8");
+	return {
+		value: readFileSync(filePath, "utf-8"),
+		path: filePath
+	}
 }
 
 export const nodeMetadata = {

@@ -82,7 +82,9 @@ export default async function loadTextBlob(node, options) {
 
 	output += "=====FILE END=====";
 
-	return output;
+	return {
+		value: output
+	}
 };
 
 export const nodeMetadata = {

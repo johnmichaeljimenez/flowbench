@@ -16,7 +16,7 @@ export default async function gitListStagedFiles(node, options) {
 	const stagedFiles = status.staged;
 
 	if (!stagedFiles || stagedFiles.length === 0) {
-		return "No files are staged.";
+		return { value: "No files are staged." };
 	}
 
 	let combinedContent = "";
@@ -54,7 +54,9 @@ export default async function gitListStagedFiles(node, options) {
 		combinedContent += `====================\n`;
 	}
 
-	return combinedContent;
+	return {
+		value: combinedContent
+	}
 };
 
 export const nodeMetadata = {

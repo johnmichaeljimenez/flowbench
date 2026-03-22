@@ -1,6 +1,8 @@
 import { resolveInput } from "../nodeutils.js";
 
 export default async function executeShell(node, options) {
+	return {value: ""} //disabled for now (unused anyway)
+	
 	const command = await resolveInput(node.input.command);
 	const fireAndForget = await resolveInput(node.input.fireAndForget) ?? false;
 
@@ -12,41 +14,43 @@ export default async function executeShell(node, options) {
 			stdio: 'ignore',
 			detached: true
 		});
-		return '';
+		return { value: '' };
 	}
 
-	return new Promise((resolve) => {
-		const child = spawn(command, {
-			shell: true,
-			stdio: ['ignore', 'pipe', 'pipe']
-		});
+	return {
+		value: new Promise((resolve) => {
+			const child = spawn(command, {
+				shell: true,
+				stdio: ['ignore', 'pipe', 'pipe']
+			});
 
-		let output = '';
-		let errorOutput = '';
+			let output = '';
+			let errorOutput = '';
 
-		child.stdout.on('data', (data) => {
-			output += data.toString();
-		});
+			child.stdout.on('data', (data) => {
+				output += data.toString();
+			});
 
-		child.stderr.on('data', (data) => {
-			errorOutput += data.toString();
-		});
+			child.stderr.on('data', (data) => {
+				errorOutput += data.toString();
+			});
 
-		child.on('close', (code) => {
-			if (code === 0) {
-				resolve(output.trim());
-			} else {
-				const errorMsg = `Shell command failed (code ${code}): ${errorOutput || output}`;
-				console.error(errorMsg);
-				resolve(errorMsg);
-			}
-		});
+			child.on('close', (code) => {
+				if (code === 0) {
+					resolve(output.trim());
+				} else {
+					const errorMsg = `Shell command failed (code ${code}): ${errorOutput || output}`;
+					console.error(errorMsg);
+					resolve(errorMsg);
+				}
+			});
 
-		child.on('error', (err) => {
-			console.error('Shell execution error:', err);
-			resolve(`Error: ${err.message}`);
-		});
-	});
+			child.on('error', (err) => {
+				console.error('Shell execution error:', err);
+				resolve(`Error: ${err.message}`);
+			});
+		})
+	};
 };
 
 export const nodeMetadata = {

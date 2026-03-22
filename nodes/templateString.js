@@ -12,7 +12,9 @@ export default async function templateString(node, options) {
 		result = result.replaceAll(`{${index}}`, value ?? "");
 	});
 
-	return result;
+	return {
+		value: result
+	}
 };
 
 export const nodeMetadata = {

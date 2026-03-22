@@ -25,7 +25,7 @@ export default async function gitListFilesFromCommit(node, options) {
 	}
 
 	if (!diffSummary || !diffSummary.files || diffSummary.files.length === 0) {
-		return `No files changed in commit ${commitHash}.`;
+		return { value: `No files changed in commit ${commitHash}.` };
 	}
 
 	let combinedContent = `Files changed in commit ${commitHash}:\n\n`;
@@ -51,7 +51,9 @@ export default async function gitListFilesFromCommit(node, options) {
 		combinedContent += `====================\n`;
 	}
 
-	return combinedContent;
+	return {
+		value: combinedContent
+	}
 };
 
 export const nodeMetadata = {
