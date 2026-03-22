@@ -64,17 +64,23 @@ function renderResults() {
 	workingData.results.forEach((element, index) => {
 		if (element.type === "text") {
 			const container = document.createElement("div");
+			container.classList.add("box");
 			container.innerText = element.name ?? "";
 
 			const copyBtn = document.createElement("button");
 			copyBtn.innerText = "Copy";
+			copyBtn.classList.add("button");
+			copyBtn.classList.add("is-info");
 
 			copyBtn.onclick = () => navigator.clipboard.writeText(workingData.results[index].value ?? "");
 			container.appendChild(copyBtn);
 
 			container.appendChild(document.createElement("hr"));
-			const txt = document.createElement("p");
-			txt.innerText = element.value ?? "<EMPTY>";
+			const txt = document.createElement("div");
+			if (element.markdown)
+				txt.innerHTML = marked.parse(element.value)
+			else
+				txt.innerText = element.value ?? "<EMPTY>";
 			container.appendChild(txt);
 
 			responseOutput.appendChild(container);
