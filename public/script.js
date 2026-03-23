@@ -9,6 +9,11 @@ const graphForm = document.getElementById('graphForm');
 let workingData = null;
 let running = false;
 
+window.addEventListener("beforeunload", (e) => {
+	if (!running) return;
+	e.preventDefault();
+});
+
 const markedWithHighlight = new Marked(
 	{
 		gfm: true,
