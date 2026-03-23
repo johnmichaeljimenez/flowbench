@@ -17,7 +17,7 @@
 	],
 	"form": [
 		{
-			"type": "text",
+			"type": "textfield",
 			"id": "val.string",
 			"name": "Input Text",
 			"defaultValue": "Hello World!",
