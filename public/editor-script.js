@@ -16,6 +16,7 @@ require.config({
 let defaultTemplate = "";
 let fileHandle = null;
 let savedString = null;
+const fileNameHeader = document.getElementById("current-filename");
 
 function isDirty() {
 	return savedString != window.monacoEditor.getValue();
@@ -32,6 +33,7 @@ function fileNew() {
 	fileHandle = null;
 	savedString = defaultTemplate;
 	window.monacoEditor.setValue(savedString);
+	fileNameHeader.innerText = "Untitled";
 };
 
 async function fileOpen() {
@@ -49,7 +51,8 @@ async function fileOpen() {
 		const file = await fileHandle.getFile();
 		savedString = await file.text();
 		window.monacoEditor.setValue(savedString);
-		
+		fileNameHeader.innerText = fileHandle.name;
+
 	} catch (error) {
 		console.error("File open error:", error);
 	}
@@ -72,6 +75,8 @@ async function fileSave(saveAs) {
 		const writable = await fileHandle.createWritable();
 		await writable.write(savedString);
 		await writable.close();
+		
+		fileNameHeader.innerText = fileHandle.name;
 	} catch (error) {
 		console.error("File save error:", error);
 	}
@@ -112,6 +117,7 @@ require(['vs/editor/editor.main'], function () {
 			}, 50);
 
 			defaultTemplate = editor.getValue();
+			savedString = defaultTemplate;
 			console.log('JSON template loaded from template.json');
 		})
 		.catch(err => {
@@ -128,6 +134,5 @@ require(['vs/editor/editor.main'], function () {
 
 	// Attach the debounced listener
 	editor.onDidChangeModelContent(handleEditorChange);
-
 	window.monacoEditor = editor;
 });
