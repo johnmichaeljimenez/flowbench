@@ -1,0 +1,36 @@
+{
+	"graph": [
+		{
+			"id": "val",
+			"type": "constantString",
+			"input": {
+				"string": "Hello World!"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$val"
+			}
+		}
+	],
+	"form": [
+		{
+			"type": "text",
+			"id": "val.string",
+			"name": "Input Text",
+			"defaultValue": "Hello World!",
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Result"
+			}
+		]
+	}
+}
