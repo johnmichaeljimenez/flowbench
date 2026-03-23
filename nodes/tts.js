@@ -7,6 +7,7 @@ export default async function tts(node, options) {
 	const voiceId = await resolveInput(node.input.voiceId);
 	const apiKeyEnv = node.input.apiKey ?? "ELEVENLABS_API_KEY";
 	const outputPath = await resolveInput(node.input.outputPath);
+	const forceWrite = await resolveInput(node.input.forceWrite) === true;
 
 	if (!text?.trim()) {
 		throw new Error("No text provided for TTS");
@@ -55,7 +56,7 @@ export default async function tts(node, options) {
 	const audioBuffer = Buffer.from(arrayBuffer);
 	const base64Audio = audioBuffer.toString("base64");
 
-	if (options.localMode) {
+	if (options.localMode || forceWrite) {
 		const dir = path.dirname(outputPath);
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(outputPath, audioBuffer);
@@ -86,7 +87,8 @@ export const nodeMetadata = {
 		modelId: { type: "string", required: false, default: "eleven_v3" },
 		outputFormat: { type: "string", required: false, default: "mp3_44100_128" },
 		stability: { type: "number", required: false, default: 0.5 },
-		similarityBoost: { type: "number", required: false, default: 0.75 }
+		similarityBoost: { type: "number", required: false, default: 0.75 },
+		forceWrite: { type: "boolean", required: false, default: true }
 	},
 	outputs: ["value", "filePath", "audioBase64", "filename"]
 };
