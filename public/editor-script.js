@@ -13,6 +13,70 @@ require.config({
 	}
 });
 
+let defaultTemplate = "";
+let fileHandle = null;
+let savedString = null;
+
+function isDirty() {
+	return savedString != window.monacoEditor.getValue();
+}
+
+function showUnsavedConfirm() {
+	return isDirty() && !confirm("You have unsaved changes. Continue?");
+};
+
+function fileNew() {
+	if (showUnsavedConfirm())
+		return;
+
+	fileHandle = null;
+	savedString = defaultTemplate;
+	window.monacoEditor.setValue(savedString);
+};
+
+async function fileOpen() {
+	if (showUnsavedConfirm())
+		return;
+
+	try {
+		[fileHandle] = await window.showOpenFilePicker({
+			types: [{
+				description: "JSON Files",
+				accept: { "application/json": [".json"] }
+			}]
+		});
+
+		const file = await fileHandle.getFile();
+		savedString = await file.text();
+		window.monacoEditor.setValue(savedString);
+		
+	} catch (error) {
+		console.error("File open error:", error);
+	}
+};
+
+
+async function fileSave(saveAs) {
+	try {
+		if (!fileHandle || saveAs) {
+			fileHandle = await window.showSaveFilePicker({
+				suggestedName: "graph.json",
+				types: [{
+					description: "JSON Files",
+					accept: { "application/json": [".json"] }
+				}]
+			});
+		}
+
+		savedString = window.monacoEditor.getValue();
+		const writable = await fileHandle.createWritable();
+		await writable.write(savedString);
+		await writable.close();
+	} catch (error) {
+		console.error("File save error:", error);
+	}
+};
+
 require(['vs/editor/editor.main'], function () {
 	const editor = monaco.editor.create(document.getElementById('editor'), {
 		value: "{}",
@@ -47,6 +111,7 @@ require(['vs/editor/editor.main'], function () {
 				editor.getAction('editor.action.formatDocument').run();
 			}, 50);
 
+			defaultTemplate = editor.getValue();
 			console.log('JSON template loaded from template.json');
 		})
 		.catch(err => {
