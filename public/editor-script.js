@@ -26,6 +26,11 @@ function showUnsavedConfirm() {
 	return isDirty() && !confirm("You have unsaved changes. Continue?");
 };
 
+window.addEventListener("beforeunload", (e) => {
+	if (!isDirty()) return;
+	e.preventDefault();
+});
+
 function fileNew() {
 	if (showUnsavedConfirm())
 		return;
