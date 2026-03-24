@@ -14,6 +14,101 @@ window.addEventListener("beforeunload", (e) => {
 	e.preventDefault();
 });
 
+function escapeHtml(unsafe) {
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
+function parseDelimitedText(text, delimiter) {
+	const rows = [];
+	let currentRow = [];
+	let currentCell = '';
+	let inQuotes = false;
+	let i = 0;
+	const len = text.length;
+
+	while (i < len) {
+		const char = text[i];
+
+		if (char === '"') {
+			if (inQuotes && i + 1 < len && text[i + 1] === '"') {
+				currentCell += '"';
+				i += 2;
+				continue;
+			}
+			inQuotes = !inQuotes;
+			i++;
+			continue;
+		}
+
+		if (char === delimiter && !inQuotes) {
+			currentRow.push(currentCell);
+			currentCell = '';
+			i++;
+			continue;
+		}
+
+		if ((char === '\n' || char === '\r') && !inQuotes) {
+			currentRow.push(currentCell);
+			if (currentRow.some(cell => cell.trim() !== '')) {
+				rows.push(currentRow);
+			}
+			currentRow = [];
+			currentCell = '';
+
+			if (char === '\r' && i + 1 < len && text[i + 1] === '\n') i += 2;
+			else i++;
+			continue;
+		}
+
+		currentCell += char;
+		i++;
+	}
+
+	if (currentCell || currentRow.length) {
+		currentRow.push(currentCell);
+		if (currentRow.some(cell => cell.trim() !== '')) {
+			rows.push(currentRow);
+		}
+	}
+
+	return rows;
+}
+
+function delimitedToHtmlTable(text, delimiter) {
+	if (!text || typeof text !== 'string' || text.trim() === '') {
+		return '<p class="has-text-grey-light">No data to display</p>';
+	}
+
+	const rows = parseDelimitedText(text.trim(), delimiter);
+
+	if (rows.length === 0) {
+		return '<p class="has-text-grey-light">No data to display</p>';
+	}
+
+	let html = '<table class="table is-bordered is-striped is-hoverable is-fullwidth"><thead><tr>';
+
+	rows[0].forEach(cell => {
+		html += `<th>${escapeHtml(cell)}</th>`;
+	});
+	html += '</tr></thead><tbody>';
+
+	for (let i = 1; i < rows.length; i++) {
+		html += '<tr>';
+		rows[i].forEach(cell => {
+			html += `<td>${escapeHtml(cell)}</td>`;
+		});
+		html += '</tr>';
+	}
+	html += '</tbody></table>';
+
+	return html;
+}
+
 const markedWithHighlight = new Marked(
 	{
 		gfm: true,
@@ -100,11 +195,19 @@ function renderResults() {
 
 			container.appendChild(document.createElement("hr"));
 			const txt = document.createElement("div");
-			if (element.markdown)
+			const format = (element.format || '').toLowerCase();
+
+			if (format === "markdown") {
 				txt.innerHTML = markedWithHighlight.parse(element.value)
-			else
+			} else if (format === "csv") {
+				txt.innerHTML = delimitedToHtmlTable(element.value, ',');
+			} else if (format === "tsv") {
+				txt.innerHTML = delimitedToHtmlTable(element.value, '\t');
+			}
+			else {
 				txt.innerText = element.value ?? "<EMPTY>";
-			
+			}
+
 			txt.querySelectorAll("table").forEach(table => {
 				table.classList.add("table", "is-bordered", "is-striped", "is-hoverable", "is-fullwidth");
 			});
@@ -197,7 +300,7 @@ async function runGraph(event) {
 		return;
 	}
 
-	if (!workingData.meta.disableConfirm && !confirm("Run this graph?"))
+	if (!workingData.meta?.disableConfirm && !confirm("Run this graph?"))
 		return;
 
 	const submitBtn = document.getElementById("form-submit");
