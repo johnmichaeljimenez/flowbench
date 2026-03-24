@@ -197,7 +197,7 @@ async function runGraph(event) {
 		return;
 	}
 
-	if (!confirm("Run this graph?"))
+	if (!workingData.meta.disableConfirm && !confirm("Run this graph?"))
 		return;
 
 	const submitBtn = document.getElementById("form-submit");
