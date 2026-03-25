@@ -10,24 +10,33 @@ export async function callLLm({
   temperature = 0.7,
   maxTokens = 1024,
   topP = 0.9,
-  useTools = false //for xAI
+  useTools = false, //for xAI
+  logToolUsage = true
 }) {
   if (test) {
-    return {
+    const result = {
       response: `This is a test.\n\nSystem Prompt: ${systemPrompt}\n\nUser Prompt: ${userPrompt}`,
       modelUsed: "test mode",
       tokensUsed: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      usedTools: false,
+      toolCalls: [],
+      usage: null,
     };
+
+    if (logToolUsage) {
+      console.log("[LLM Test Mode] No tokens or tools used");
+    }
+    return result;
   }
+
   if (!userPrompt) throw new Error("userPrompt is required");
   if (!apiKey) throw new Error("apiKey is required");
   if (!baseURL) throw new Error("baseURL is required");
   if (!model) throw new Error("model is required");
 
-  const client = new OpenAI({
-    apiKey,
-    baseURL,
-  });
+  const client = new OpenAI({ apiKey, baseURL });
 
   if (useTools) {
     const completion = await client.responses.create({
@@ -47,16 +56,51 @@ export async function callLLm({
     });
 
     let responseText = "";
-    if (completion.output && completion.output.length > 0) {
-      const lastItem = completion.output[completion.output.length - 1];
-      responseText = lastItem.content?.[0]?.text?.trim() || "";
+    let usedTools = false;
+    const toolCalls = [];
+
+    if (completion.output && Array.isArray(completion.output)) {
+      for (const item of completion.output) {
+        if (item.type && item.type.includes("_call")) {
+          usedTools = true;
+          const toolName = item.name || item.type.replace("_call", "");
+          toolCalls.push(toolName);
+        }
+
+        if (item.type === "message" && item.content?.[0]?.text) {
+          responseText = item.content[0].text.trim();
+        }
+      }
+    }
+
+    const usage = completion.usage || {};
+    const inputTokens = usage.input_tokens ?? 0;
+    const outputTokens = usage.output_tokens ?? 0;
+    const totalTokens = usage.total_tokens ?? inputTokens + outputTokens;
+
+    if (logToolUsage) {
+      console.log(`\n=== LLM Tool & Cost Report ===`);
+      console.log(`Model          : ${model}`);
+      console.log(`Tools used     : ${usedTools} (${toolCalls.length} call${toolCalls.length === 1 ? "" : "s"})`);
+      if (toolCalls.length) console.log(`Tools called   : ${toolCalls.join(", ")}`);
+      console.log(`Input tokens   : ${inputTokens}`);
+      console.log(`Output tokens  : ${outputTokens}`);
+      console.log(`Total tokens   : ${totalTokens}`);
+      console.log(`Response length: ${responseText.length} chars`);
+      console.log(`==============================\n`);
     }
 
     return {
       response: responseText,
       modelUsed: model,
-      tokensUsed: completion.usage?.total_tokens ?? "unknown",
+      tokensUsed: totalTokens,
+      inputTokens,
+      outputTokens,
+      usedTools,
+      toolCalls,
+      usage: completion.usage || null,
     };
+
   } else {
     const completion = await client.chat.completions.create({
       model,
@@ -69,10 +113,104 @@ export async function callLLm({
       top_p: topP,
     });
 
+    const responseText = completion.choices?.[0]?.message?.content?.trim() || "";
+    const usage = completion.usage || {};
+    const inputTokens = usage.prompt_tokens ?? usage.input_tokens ?? 0;
+    const outputTokens = usage.completion_tokens ?? usage.output_tokens ?? 0;
+    const totalTokens = usage.total_tokens ?? inputTokens + outputTokens;
+
+    if (logToolUsage) {
+      console.log(`\n=== LLM Cost Report (No Tools) ===`);
+      console.log(`Model        : ${model}`);
+      console.log(`Tools used   : false`);
+      console.log(`Input tokens : ${inputTokens}`);
+      console.log(`Output tokens: ${outputTokens}`);
+      console.log(`Total tokens : ${totalTokens}`);
+      console.log(`================================\n`);
+    }
+
     return {
-      response: completion.choices?.[0]?.message?.content?.trim() || "",
+      response: responseText,
       modelUsed: model,
-      tokensUsed: completion.usage?.total_tokens ?? "unknown",
+      tokensUsed: totalTokens,
+      inputTokens,
+      outputTokens,
+      usedTools: false,
+      toolCalls: [],
+      usage: completion.usage || null,
     };
   }
+}
+
+export async function generateImage({
+  test,
+  prompt,
+  apiKey,
+  baseURL,
+  model = "grok-imagine-image",
+  n = 1,
+  aspectRatio,
+  resolution,
+  responseFormat = "url",
+  logUsage = true
+}) {
+  if (test) {
+    const result = {
+      images: Array.from({ length: n }, (_, i) => ({
+        url: `https://picsum.photos/id/${1000 + i}/1024/1024`,
+        revised_prompt: prompt
+      })),
+      modelUsed: "test-mode",
+      prompt,
+      n,
+      aspectRatio,
+      resolution,
+      responseFormat
+    };
+    if (logUsage) console.log("[Image Gen Test Mode]");
+    return result;
+  }
+
+  if (!prompt) throw new Error("prompt is required");
+  if (!apiKey) throw new Error("apiKey is required");
+  if (!baseURL) throw new Error("baseURL is required");
+
+  const client = new OpenAI({ apiKey, baseURL });
+
+  const params = {
+    model,
+    prompt,
+    n: Math.max(1, Math.min(10, Number(n) || 1)),
+    response_format: responseFormat,
+  };
+
+  const extraBody = {};
+  if (aspectRatio) extraBody.aspect_ratio = aspectRatio;
+  if (resolution) extraBody.resolution = resolution;
+
+  const response = await client.images.generate({
+    ...params,
+    ...(Object.keys(extraBody).length > 0 ? { extra_body: extraBody } : {})
+  });
+
+  if (logUsage) {
+    console.log(`\n=== Grok Imagine Report ===`);
+    console.log(`Model          : ${model}`);
+    console.log(`Images         : ${params.n}`);
+    console.log(`Aspect Ratio   : ${aspectRatio || "auto"}`);
+    console.log(`Resolution     : ${resolution || "1k"}`);
+    console.log(`Format         : ${responseFormat}`);
+    console.log(`===========================\n`);
+  }
+
+  return {
+    images: response.data || [],
+    modelUsed: model,
+    prompt,
+    n: params.n,
+    aspectRatio: aspectRatio || null,
+    resolution: resolution || null,
+    responseFormat,
+    fullResponse: response
+  };
 }
