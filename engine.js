@@ -95,23 +95,6 @@ function applySchema(data, schema) {
     return result;
 }
 
-function applyTemplates(str) {
-    if (typeof str !== "string") return str;
-
-    if (!global.datenow) {
-        const now = new Date();
-        global.datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
-            `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
-    }
-
-    return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
-        if (key === 'datenow') {
-            return global.datenow;
-        }
-        return `{{:${key}}}`;
-    });
-}
-
 export function extractFromPath(data, path) {
     const keys = path.split(/\.|\[|\]/).filter(Boolean);
     let value = data;
@@ -179,6 +162,21 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     const options = {
         localMode: localMode
     };
+
+    const now = new Date();
+    const datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+        `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
+
+    function applyTemplates(str) {
+        if (typeof str !== "string") return str;
+
+        return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
+            if (key === 'datenow') {
+                return datenow;
+            }
+            return `{{:${key}}}`;
+        });
+    }
 
     const cache = {};
     const nodes = Object.fromEntries(
