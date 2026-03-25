@@ -1,0 +1,63 @@
+{
+	"graph": [
+		{
+			"id": "sysPrompt",
+			"type": "constantString",
+			"input": {
+				"string": "You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is. If you used Grok Tools (ex. web search and X search), tell the user, but only use it when absolutely needed."
+			}
+		},
+		{
+			"id": "userInput",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "llmChat",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 1024,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning",
+				"useTools": true
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$llmChat"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userInput.string",
+			"name": "Enter inquiry",
+			"value": null,
+			"type": "textfield",
+			"required": true,
+			"autoclear": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "llmChat.value",
+				"type": "text",
+				"name": "Chat",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"disableConfirm": true,
+		"notifyOnEnd": true
+	}
+}
