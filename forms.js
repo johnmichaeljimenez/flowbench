@@ -12,6 +12,32 @@ function textfield(element) {
 	`;
 }
 
+function number(element) {
+	const minRange = element.minRange !== undefined ? `min="${element.minRange}"` : '';
+	const maxRange = element.maxRange !== undefined ? `max="${element.maxRange}"` : '';
+	const step = !element.isInteger ? 'step="0.01"' : '';
+	const value = element.value || "";
+
+	return `
+    <label class="label" for="${element.id}">
+      ${element.name || "Number"}:
+    </label>
+    <div class="control">
+      <input 
+        class="input" 
+        type="number" 
+        id="${element.id}" 
+        value="${value}" 
+        ${minRange} 
+        ${maxRange} 
+        ${step}
+        ${element.required ? "required" : ""}
+      >
+    </div>
+    <p class="help">${element.description || ""}</p>
+  `;
+}
+
 function separator() {
 	return "<hr>";
 }
@@ -91,7 +117,8 @@ export default function generateForm(formData) {
 		textfield,
 		separator,
 		uploadText,
-		dropdown
+		dropdown,
+		number
 	};
 
 	formData.forEach(element => {
