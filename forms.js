@@ -12,6 +12,27 @@ function textfield(element) {
 	`;
 }
 
+function textarea(element) {
+	const rows = element.lineCount || 3;
+	const value = element.value || "";
+
+	return `
+    <label class="label" for="${element.id}">
+      ${element.name || ""}:
+    </label>
+    <div class="control">
+      <textarea 
+        class="textarea" 
+        id="${element.id}" 
+        rows="${rows}" 
+        ${element.required ? "required" : ""}
+        ${element.autoclear ? 'data-autoclear="true"' : ""}
+      >${value}</textarea>
+    </div>
+    <p class="help">${element.description || ""}</p>
+  `;
+}
+
 function number(element) {
 	const minRange = element.minRange !== undefined ? `min="${element.minRange}"` : '';
 	const maxRange = element.maxRange !== undefined ? `max="${element.maxRange}"` : '';
@@ -118,7 +139,8 @@ export default function generateForm(formData) {
 		separator,
 		uploadText,
 		dropdown,
-		number
+		number,
+		textarea
 	};
 
 	formData.forEach(element => {
