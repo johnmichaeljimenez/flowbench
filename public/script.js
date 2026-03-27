@@ -6,6 +6,9 @@ const fileInput = document.getElementById('jsonFile');
 const responseOutput = document.getElementById('responseOutput');
 const graphForm = document.getElementById('graphForm');
 
+const graphName = document.getElementById("graphName");
+const graphDesc = document.getElementById("graphDescription");
+
 let workingData = null;
 let running = false;
 
@@ -272,6 +275,9 @@ fileInput.addEventListener('change', async () => {
 		const formHTML = await response.text();
 		graphForm.innerHTML = formHTML;
 		responseOutput.textContent = "";
+
+		graphName.innerText = workingData.meta?.name ?? "<Untitled Graph>";
+		graphDesc.innerText = workingData.meta?.description ?? "";
 
 		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
 			const filenameEl = document.getElementById(`${input.id}-filename`);
