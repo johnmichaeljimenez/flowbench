@@ -1,0 +1,130 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "blob",
+			"type": "loadTextBlob",
+			"input": {
+				"path": "E:/projects/flowbench",
+				"whitelist": ".js;.json",
+				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;graphs"
+			}
+		},
+		{
+			"id": "blobQuery",
+			"type": "templateString",
+			"input":{
+				"template":"{0}\n\n\n{1}",
+				"sources": [
+					"$userQuestion",
+					"$blob"
+				]
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$userQuestion",
+				"userPrompt": "$blob",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-non-reasoning"
+			}
+		},
+		{
+			"id": "llm1Answer",
+			"type": "templateString",
+			"input": {
+				"template": "User's question:\n{0}\n\n\n==========Assistant's answer:==========\n{1}\n\n\n==========Codebase source to be modified:==========\n{2}",
+				"sources": [
+					"$userQuestion",
+					"$llm1",
+					"$blob"
+				]
+			}
+		},
+		{
+			"id": "llmChecker",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Check if the Assistant's answer is correct based on user's question and the codebase source. Check for any serious immediate flaws (not theoretical or enterprise-level ones). Show only the answer as output with any corrections and nothing else.",
+				"userPrompt": "$llm1Answer",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "query",
+			"type": "choose",
+			"input": {
+				"condition": true,
+				"trueSource": "$blobQuery",
+				"falseSource": "$llmChecker"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$query",
+				"path": "./.temp/reports/flowbench-help-{{:datenow}}.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userQuestion.string",
+			"name": "Enter inquiry",
+			"value": null,
+			"type": "textarea",
+			"required": true
+		},
+		{
+			"type": "dropdown",
+			"id": "query.condition",
+			"name": "Text Blob only",
+			"data": [
+				{
+					"value": "true",
+					"display": "Yes"
+				},
+				{
+					"value": "false",
+					"display": "No"
+				}
+			],
+			"defaultValue": "true",
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Response"
+			}
+		]
+	},
+	"meta": {
+		"name": "Flowbench Help",
+		"description": "Coding assistant graph for self-improving code and architecture",
+		"notifyOnEnd": true
+	}
+}
