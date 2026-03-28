@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import path from "node:path";
+import { readFileSync, existsSync } from "node:fs";
 import { processGraph, extractFromPath, validateGraph } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 import generateForm from './forms.js';
@@ -12,6 +13,31 @@ dotenv.config({
     path: path.resolve(__dirname, '.env')
 });
 
+const GRAPHS_DIR = path.join(__dirname, 'graphs');
+
+function loadGraphByName(graphName) {
+    if (typeof graphName !== 'string') {
+        throw new Error('graphName must be a string');
+    }
+
+    let cleanName = graphName.replace(/^\/+/, '').replace(/\\/g, '/');
+    const fullPath = path.resolve(GRAPHS_DIR, cleanName);
+
+    if (!fullPath.startsWith(GRAPHS_DIR + path.sep)) {
+        throw new Error('Invalid graph path: directory traversal detected');
+    }
+
+    if (!existsSync(fullPath)) {
+        throw new Error(`Graph not found: ${cleanName} (looked in ${GRAPHS_DIR})`);
+    }
+
+    const graphData = JSON.parse(readFileSync(fullPath, 'utf-8'));
+    return {
+        graphData,
+        graphDir: path.dirname(fullPath)
+    };
+}
+
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ type: 'application/json', limit: '10mb' }));
@@ -21,41 +47,59 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.post('/form', (req, res) => {
-    const graph = req.body;
-    const formData = graph.form ?? [];
-    
-    validateGraph(graph);
+app.post('/graphs', async (req, res) => {
+    const { graphName, startNode = "out1", params = {} } = req.body;
 
-    let form = generateForm(formData);
-    res.send(form);
-});
-
-app.post('/process', async (req, res) => {
-    const graph = req.body;
-    const startNode = graph.startNode ?? "out1";
-    const params = graph.params ?? {};
-    const outputParams = graph.output?.cards ?? [];
-
-    if (!graph.graph) {
-        return res.status(400).json({ error: 'Missing "graph" property in request body' });
+    if (!graphName) {
+        return res.status(400).json({ error: 'Missing "graphName" property' });
     }
 
+    let originalCwd = null;
     try {
-        const output = await processGraph(graph, startNode, false, params);
+        const { graphData, graphDir } = loadGraphByName(graphName);
 
+        originalCwd = process.cwd();
+        process.chdir(graphDir);
+
+        const result = await processGraph(graphData, startNode, false, params);
+        const output = graphData.output;
+        const outputParams = output.cards ?? [];
+        console.log(output);
         let filteredOutput = [];
+
         if (outputParams.length > 0) {
-            for (const param of outputParams) {
-                const path = param.id;
-                const value = extractFromPath(output, path);
-                if (value !== null) {
-                    filteredOutput.push({ value, ...param });
-                }
-            }
+            filteredOutput = outputParams
+                .map(param => {
+                    const value = extractFromPath(result, param.id);
+                    return value !== null ? { value, ...param } : null;
+                })
+                .filter(Boolean);
         }
 
         return res.json(filteredOutput);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: error.message });
+    } finally {
+        if (originalCwd) process.chdir(originalCwd);
+    }
+});
+
+app.post('/graphs/form', (req, res) => {
+    const { graphName } = req.body;
+    if (!graphName) {
+        return res.status(400).json({ error: 'Missing "graphName" property' });
+    }
+
+    try {
+        const { graphData } = loadGraphByName(graphName);
+        validateGraph(graphData);
+
+        const formHtml = generateForm(graphData.form ?? []);
+        res.json({
+            formHtml,
+            meta: graphData.meta ?? {}
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });

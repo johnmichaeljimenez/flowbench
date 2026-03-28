@@ -2,13 +2,12 @@ const { Marked } = globalThis.marked;
 const { markedHighlight } = globalThis.markedHighlight;
 
 const loadGraphLink = document.getElementById('loadGraph');
-const fileInput = document.getElementById('jsonFile');
 const responseOutput = document.getElementById('responseOutput');
 const graphForm = document.getElementById('graphForm');
+const graphNameEl = document.getElementById("graphName");
+const graphDescEl = document.getElementById("graphDescription");
 
-const graphName = document.getElementById("graphName");
-const graphDesc = document.getElementById("graphDescription");
-
+let currentGraphName = null;
 let workingData = null;
 let running = false;
 
@@ -127,9 +126,47 @@ const markedWithHighlight = new Marked(
 	})
 );
 
-loadGraphLink.addEventListener('click', (event) => {
+loadGraphLink.addEventListener('click', async (event) => {
 	event.preventDefault();
-	fileInput.click();
+
+	const graphNameInput = prompt("Enter graph name");
+	if (!graphNameInput) return;
+
+	currentGraphName = graphNameInput.trim();
+
+	try {
+		const response = await fetch('/graphs/form', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ graphName: currentGraphName })
+		});
+
+		if (!response.ok) throw new Error(await response.text());
+
+		const data = await response.json();
+		graphNameEl.textContent = data.meta.name ?? currentGraphName;
+		graphDescEl.textContent = data.meta.description ?? "";
+
+		graphForm.innerHTML = data.formHtml;
+		responseOutput.innerHTML = "";
+
+		workingData = {
+			graphName: currentGraphName,
+			meta: data.meta ?? {}
+		};
+
+		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
+			const filenameEl = document.getElementById(`${input.id}-filename`);
+			if (filenameEl) {
+				input.addEventListener('change', () => {
+					filenameEl.textContent = input.files[0] ? input.files[0].name : 'No file selected';
+				});
+			}
+		});
+
+	} catch (err) {
+		responseOutput.innerHTML = `<div class="notification is-danger">Error loading graph:<br>${err.message}</div>`;
+	}
 });
 
 async function getParams(form) {
@@ -255,85 +292,42 @@ function renderResults() {
 	});
 }
 
-fileInput.addEventListener('change', async () => {
-	const file = fileInput.files[0];
-	if (!file) return;
-
-	try {
-		const text = await file.text();
-		workingData = JSON.parse(text);
-		workingData.results = [];
-
-		const response = await fetch('/form', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(workingData)
-		});
-
-		const formHTML = await response.text();
-		graphForm.innerHTML = formHTML;
-		responseOutput.textContent = "";
-
-		graphName.innerText = workingData.meta?.name ?? "<Untitled Graph>";
-		graphDesc.innerText = workingData.meta?.description ?? "";
-
-		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
-			const filenameEl = document.getElementById(`${input.id}-filename`);
-			if (filenameEl) {
-				input.addEventListener('change', () => {
-					filenameEl.textContent = input.files[0]
-						? input.files[0].name
-						: 'No file selected';
-				});
-			}
-		});
-	} catch (err) {
-		responseOutput.textContent = "Error: " + err.message;
-		workingData = null;
-	}
-});
-
 async function runGraph(event) {
 	event.preventDefault();
-
-	if (running)
-		return;
-
-	if (!workingData) {
-		alert("Please select a JSON file first.");
-		return;
-	}
+	if (running || !currentGraphName) return;
 
 	if (!workingData.meta?.disableConfirm && !confirm("Run this graph?"))
 		return;
 
 	const submitBtn = document.getElementById("form-submit");
-	submitBtn.classList.add("is-loading");
+	if (submitBtn) submitBtn.classList.add("is-loading");
 	running = true;
 
 	try {
-		workingData.params = await getParams(graphForm);
+		const params = await getParams(graphForm);
 
-		const response = await fetch('/process', {
+		const response = await fetch('/graphs', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(workingData)
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				graphName: currentGraphName,
+				params: params,
+				startNode: "out1"
+			})
 		});
+
+		if (!response.ok) throw new Error(await response.text());
 
 		const result = await response.json();
 		workingData.results = result;
 
-		console.log(workingData);
 		renderResults();
 
 	} catch (err) {
-		responseOutput.textContent = "Error: " + err.message;
+		responseOutput.innerHTML = `<div class="notification is-danger">Error:<br>${err.message}</div>`;
+		console.error(err);
 	} finally {
-		submitBtn.classList.remove("is-loading");
+		if (submitBtn) submitBtn.classList.remove("is-loading");
 		running = false;
 	}
 }
