@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import path from "node:path";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { processGraph, extractFromPath, validateGraph } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 import generateForm from './forms.js';
@@ -24,6 +24,7 @@ function listAllGraphs() {
         try {
             entries = readdirSync(currentDir);
         } catch (err) {
+            console.error(err);
             return;
         }
 
