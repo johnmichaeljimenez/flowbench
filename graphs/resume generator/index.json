@@ -2,11 +2,9 @@
   "graph": [
     {
       "id": "scrapNotes",
-      "type": "loadTextBlob",
+      "type": "constantString",
       "input": {
-        "path": "E:/notes",
-        "whitelist": ".txt;.md",
-        "blacklist": ".env;node_modules;.git"
+				"string": ""
       }
     },
     {
@@ -77,7 +75,7 @@
       "type": "writeToTextFile",
       "input": {
         "source": "$cleanup",
-        "path": "E:/projects/flowbench/graphs/resume generator with competitor analysis/.temp/my-resume-{{:datenow}}.md",
+        "path": "./.temp/reports/report-{{:datenow}} (resume).md",
         "append": false,
         "forceWrite": true
       }
@@ -87,7 +85,7 @@
       "type": "writeToTextFile",
       "input": {
         "source": "$evaluator",
-        "path": "E:/projects/flowbench/graphs/resume generator with competitor analysis/.temp/eval-{{:datenow}}.md",
+        "path": "./.temp/reports/report-{{:datenow}} (eval).md",
         "append": false,
         "forceWrite": true
       }
@@ -96,17 +94,17 @@
       "id": "out1",
       "type": "outputLog",
       "input": {
-        "source": "✅ Resume + Market Research complete!\n\nSaved resume: .temp/my-resume-{{:datenow}}.md\nSaved analysis: .temp/eval-{{:datenow}}.md"
+        "source": "✅ Resume + Market Research complete!\n\nSaved resume: .temp/reports/report-{{:datenow}} (resume).md\nSaved analysis: .temp/reports/report-{{:datenow}} (eval).md"
       }
     }
   ],
   "form": [
     {
-      "id": "scrapNotes.path",
-      "name": "Folder with your scrap notes (txt/md files)",
-      "value": "E:/notes",
-      "type": "textfield",
-      "required": true
+      "id": "scrapNotes.string",
+      "name": "Resume scrap note file (txt/md files)",
+			"type": "uploadText",
+			"accept": ".txt,.md,.json",
+			"required": true
     }
   ],
   "entryPoints": ["saveResume", "saveEval", "out1"],
@@ -115,13 +113,20 @@
       {
         "id": "cleanup.value",
         "type": "text",
-        "name": "Final Resume (Markdown)"
+        "name": "Final Resume (Markdown)",
+        "format": "markdown"
       },
       {
         "id": "evaluator.value",
         "type": "text",
-        "name": "Market Research & Competitor Analysis"
+        "name": "Market Research & Competitor Analysis",
+        "format": "markdown"
       }
     ]
-  }
+  },
+	"meta": {
+		"name": "Resume Generator with Competitor Market Research",
+		"description": "Evaluates and summarizes your credentials and work experience notes into a proper resume and provides honest evaluation among other applicants on same field using real-time information.",
+		"notifyOnEnd": true
+	}
 }

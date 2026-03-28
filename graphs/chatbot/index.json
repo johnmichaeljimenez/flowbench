@@ -161,7 +161,8 @@
       {
         "id": "llmChat.value",
         "type": "text",
-        "name": "Chat"
+        "name": "Chat",
+        "format": "markdown"
       }
     ]
   },
