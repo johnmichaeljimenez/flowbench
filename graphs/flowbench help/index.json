@@ -12,7 +12,7 @@
 			"type": "loadTextBlob",
 			"input": {
 				"path": "E:/projects/flowbench",
-				"whitelist": ".js;.json",
+				"whitelist": ".js;.json;.txt",
 				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;examples"
 			}
 		},
@@ -38,32 +38,6 @@
 				"temperature": 0.5,
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-non-reasoning"
-			}
-		},
-		{
-			"id": "llm1Answer",
-			"type": "templateString",
-			"input": {
-				"template": "User's question:\n{0}\n\n\n==========Assistant's answer:==========\n{1}\n\n\n==========Codebase source to be modified:==========\n{2}",
-				"sources": [
-					"$userQuestion",
-					"$llm1",
-					"$blob"
-				]
-			}
-		},
-		{
-			"id": "llmChecker",
-			"type": "callLLM",
-			"input": {
-				"systemPrompt": "Check if the Assistant's answer is correct based on user's question and the codebase source. Check for any serious immediate flaws (not theoretical or enterprise-level ones). Show only the answer as output with any corrections and nothing else.",
-				"userPrompt": "$llm1Answer",
-				"testMode": false,
-				"maxTokens": 4096,
-				"temperature": 0.3,
-				"apiKey": "API_KEY_GROK",
-				"baseURL": "BASE_URL_GROK",
 				"model": "grok-4-1-fast-reasoning"
 			}
 		},
@@ -73,7 +47,7 @@
 			"input": {
 				"condition": true,
 				"trueSource": "$blobQuery",
-				"falseSource": "$llmChecker"
+				"falseSource": "$llm1"
 			}
 		},
 		{
@@ -118,7 +92,8 @@
 			{
 				"id": "out1.value",
 				"type": "text",
-				"name": "Response"
+				"name": "Response",
+				"format": "markdown"
 			}
 		]
 	},
