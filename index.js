@@ -15,6 +15,44 @@ dotenv.config({
 
 const GRAPHS_DIR = path.join(__dirname, 'graphs');
 
+function listAllGraphs() {
+    const graphsDir = path.join(__dirname, 'graphs');
+    const result = [];
+
+    function walk(currentDir, basePath = '') {
+        let entries;
+        try {
+            entries = readdirSync(currentDir);
+        } catch (err) {
+            return;
+        }
+
+        for (const entry of entries) {
+            const fullPath = path.join(currentDir, entry);
+            const stat = statSync(fullPath);
+
+            if (stat.isDirectory()) {
+                const newBase = path.join(basePath, entry).replace(/\\/g, '/');
+                walk(fullPath, newBase);
+            }
+            else if (entry === 'index.json' && basePath !== '') {
+                result.push({
+                    graphName: `${basePath}/index.json`,
+                    displayName: basePath
+                });
+            }
+        }
+    }
+
+    if (existsSync(graphsDir)) {
+        walk(graphsDir);
+    }
+
+    result.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+    return result;
+}
+
 function loadGraphByName(graphName) {
     if (typeof graphName !== 'string') {
         throw new Error('graphName must be a string');
@@ -45,6 +83,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/graphs/list', (req, res) => {
+    try {
+        const graphs = listAllGraphs();
+        res.json(graphs);
+    } catch (error) {
+        console.error('Error listing graphs:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.post('/graphs', async (req, res) => {
