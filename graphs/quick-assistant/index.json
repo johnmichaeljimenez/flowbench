@@ -4,7 +4,7 @@
 			"id": "sysPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is. If you used Grok Tools (ex. web search and X search), tell the user, but only use it when absolutely needed."
+				"string": "You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is."
 			}
 		},
 		{
@@ -21,11 +21,10 @@
 				"systemPrompt": "$sysPrompt",
 				"userPrompt": "$userInput",
 				"maxTokens": 1024,
-				"temperature": 0.5,
-				"apiKey": "API_KEY_GROK",
-				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-reasoning",
-				"useTools": true
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
 			}
 		},
 		{
@@ -41,7 +40,7 @@
 			"id": "userInput.string",
 			"name": "Enter inquiry",
 			"value": null,
-			"type": "textfield",
+			"type": "textarea",
 			"required": true,
 			"autoclear": true
 		}
@@ -51,12 +50,19 @@
 			{
 				"id": "llmChat.value",
 				"type": "text",
-				"name": "Chat",
+				"name": "Response",
 				"format": "markdown"
+			},
+			{
+				"id": "userInput.value",
+				"type": "text",
+				"name": "User"
 			}
 		]
 	},
 	"meta": {
+		"name": "Quick Assistant",
+		"description": "Google Gemini 3.1 Flash (lite-preview)",
 		"disableConfirm": true,
 		"notifyOnEnd": true
 	}
