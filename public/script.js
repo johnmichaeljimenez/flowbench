@@ -144,7 +144,7 @@ loadGraphLink.addEventListener('click', async (event) => {
 		if (!response.ok) throw new Error(await response.text());
 
 		const data = await response.json();
-		graphNameEl.textContent = data.meta.name ?? currentGraphName;
+		graphNameEl.textContent = data.meta.name ?? currentGraphName.replace("/index.json", "");
 		graphDescEl.textContent = data.meta.description ?? "";
 
 		graphForm.innerHTML = data.formHtml;
