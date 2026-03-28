@@ -4,14 +4,14 @@
       "id": "pathHistory",
       "type": "constantString",
       "input": {
-        "string": "./graphs/chatbot/.temp/history.txt"
+        "string": "./.temp/history.txt"
       }
     },
     {
       "id": "pathMemory",
       "type": "constantString",
       "input": {
-        "string": "./graphs/chatbot/.temp/memory.txt"
+        "string": "./.temp/memory.txt"
       }
     },
     {
@@ -151,7 +151,7 @@
       "id": "userInput.string",
       "name": "Enter inquiry",
       "value": null,
-      "type": "textfield",
+      "type": "textarea",
       "required": true,
       "autoclear": true
     }
@@ -164,5 +164,10 @@
         "name": "Chat"
       }
     ]
+  },
+  "meta":{
+    "name": "Chatbot",
+    "description": "Basic chatbot with conversation history, memory, and realtime search tools",
+    "disableConfirm": true
   }
 }
