@@ -13,7 +13,7 @@
 			"input": {
 				"path": "E:/projects/flowbench",
 				"whitelist": ".js;.json",
-				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;graphs"
+				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;examples"
 			}
 		},
 		{

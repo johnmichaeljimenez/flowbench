@@ -6,7 +6,7 @@ const defaultBlacklist = [
 	'node_modules', '.git', '.svn', '.hg', '__pycache__',
 	'.venv', 'env', '.env', '.DS_Store', 'Thumbs.db',
 	'.nyc_output', 'coverage', '.cache', 'dist', 'build',
-	'package-lock.json', 'yarn.lock', 'reports', 'graphs', '.temp'
+	'package-lock.json', 'yarn.lock', 'reports', '.temp'
 ];
 
 export default async function loadTextBlob(node, options) {
