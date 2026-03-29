@@ -1,5 +1,25 @@
 import OpenAI from "openai";
 
+function stripOuterCodeBlock(text) {
+  if (!text || typeof text !== 'string') return text || '';
+
+  const trimmed = text.trim();
+
+  const fullRegex = /^```[\s\w]*\n?([\s\S]*?)\n?```$/;
+  let match = trimmed.match(fullRegex);
+  if (match && match[1] !== undefined) {
+    return match[1].trim();
+  }
+
+  const openRegex = /^```[\s\w]*\n?([\s\S]*)$/;
+  match = trimmed.match(openRegex);
+  if (match && match[1] !== undefined) {
+    return match[1].trim();
+  }
+
+  return trimmed;
+}
+
 export async function callLLm({
   test,
   userPrompt,
@@ -90,6 +110,12 @@ export async function callLLm({
       console.log(`==============================\n`);
     }
 
+    const original = responseText;
+    responseText = stripOuterCodeBlock(responseText);
+    if (original !== responseText && logToolUsage) {
+      console.log(`[stripCodeBlocks] Removed outer code fences (${original.length} → ${responseText.length} chars)`);
+    }
+
     return {
       response: responseText,
       modelUsed: model,
@@ -113,7 +139,7 @@ export async function callLLm({
       top_p: topP,
     });
 
-    const responseText = completion.choices?.[0]?.message?.content?.trim() || "";
+    let responseText = completion.choices?.[0]?.message?.content?.trim() || "";
     const usage = completion.usage || {};
     const inputTokens = usage.prompt_tokens ?? usage.input_tokens ?? 0;
     const outputTokens = usage.completion_tokens ?? usage.output_tokens ?? 0;
@@ -127,6 +153,13 @@ export async function callLLm({
       console.log(`Output tokens: ${outputTokens}`);
       console.log(`Total tokens : ${totalTokens}`);
       console.log(`================================\n`);
+    }
+
+
+    const original = responseText;
+    responseText = stripOuterCodeBlock(responseText);
+    if (original !== responseText && logToolUsage) {
+      console.log(`[stripCodeBlocks] Removed outer code fences (${original.length} → ${responseText.length} chars)`);
     }
 
     return {
