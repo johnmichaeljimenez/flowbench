@@ -11,7 +11,7 @@
 			"id": "ideaInstructions",
 			"type": "constantString",
 			"input": {
-				"string": "Summarize and cleanup this input taken from user's game idea stash. Turn it into a practical and doable game idea and evaluate and critic the story and features stated and provide suggestions."
+				"string": "Summarize and cleanup this raw input taken from user's notes. Clean it up and turn it into a practical and doable idea and evaluate its strengths and weaknesses and provide suggestions. Add a summary at the end explaining why your cleaned up version is a good choice."
 			}
 		},
 		{
@@ -22,10 +22,10 @@
 				"userPrompt": "$scratchFile",
 				"testMode": false,
 				"maxTokens": 4096,
-				"temperature": 0.5,
-				"apiKey": "API_KEY_GROK",
-				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-reasoning"
+				"temperature": 0.92,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
 			}
 		},
 		{
@@ -36,10 +36,10 @@
 				"userPrompt": "$scratchFile",
 				"testMode": false,
 				"maxTokens": 4096,
-				"temperature": 0.7,
-				"apiKey": "API_KEY_GROK",
-				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-reasoning"
+				"temperature": 0.9,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
 			}
 		},
 		{
@@ -58,15 +58,14 @@
 			"id": "llmChecker",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "Compare and evaluate both game ideas and take the strong points to form a coherent proper game idea that can be done practically by a solo developer. Use the idea source as the baseline and context for the Idea 1 and 2's output. Present it in a clear, understandable report and no need to mention Idea 1 and Idea 2 as the user will have no idea about it. Only your report will be presented externally so provide the already combined information. Include evaluation and criticism of the gameplay, story, and overall details, and highlight good features and things that are 100% surely not needed or even too dangerous to be included (if any).",
+				"systemPrompt": "Compare and evaluate both ideas and take the strong points to form a coherent proper report. Use the idea source as the baseline for accuracy and context for the Idea 1 and 2's output. Present it in a clear, understandable report and no need to mention Idea 1 and Idea 2 as the user will have no idea about it. Only your report will be presented externally so provide the already combined information. Include evaluation and criticism of the strengths, weaknesses, and overall details, and highlight good features and things that are 100% surely not needed or even too dangerous to be included (if any).",
 				"userPrompt": "$ideaBoth",
 				"testMode": false,
 				"maxTokens": 4096,
 				"temperature": 0.3,
-				"apiKey": "API_KEY_GROK",
-				"baseURL": "BASE_URL_GROK",
-				"model": "grok-4-1-fast-reasoning",
-				"useTools": true
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
 			}
 		},
 		{
@@ -74,7 +73,7 @@
 			"type": "writeToTextFile",
 			"input": {
 				"source": "$llmChecker",
-				"path": "./.temp/reports/game-idea-{{:datenow}}.md",
+				"path": "./.temp/reports/idea-{{:datenow}}.md",
 				"append": false,
 				"encoding": "utf-8",
 				"forceWrite": true
@@ -84,7 +83,7 @@
 	"form": [
 		{
 			"id": "scratchFile.string",
-			"name": "Game Idea file (raw notes)",
+			"name": "Raw Notes file",
 			"type": "uploadText",
 			"accept": ".txt,.md,.json",
 			"required": true
@@ -101,8 +100,8 @@
 		]
 	},
 	"meta": {
-		"name": "Game Idea Generator",
-		"description": "Evaluates and summarizes your raw game idea notes via ensemble reasoning",
+		"name": "Idea Generator Report",
+		"description": "Evaluates and summarizes your raw idea notes via ensemble reasoning",
 		"notifyOnEnd": true
 	}
 }
