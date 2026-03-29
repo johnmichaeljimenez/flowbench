@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,8 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark-dimmed.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark-dimmed.min.css">
 </head>
+
 <body style="padding-top: 2rem;">
     <section class="section">
         <nav class="navbar has-shadow mb-4 is-fixed-top" role="navigation" aria-label="main navigation">
@@ -21,7 +24,7 @@
             </div>
             <a href="#" id="loadGraph" class="navbar-item">
                 <span class="icon"><i class="fas fa-folder-open"></i></span>
-                <span>Load Graph</span>
+                <span>Select Graph</span>
             </a>
         </nav>
 
@@ -32,8 +35,29 @@
             <form id="graphForm" onsubmit="runGraph(event)"></form>
             <div id="responseOutput" class="px-4 py-4"></div>
         </div>
-
-        <script src="script.js"></script>
     </section>
+
+    <div class="modal" id="graphModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Select a Graph</p>
+                <button class="delete is-large" aria-label="close" id="closeModal"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="field">
+                    <div class="control has-icons-left">
+                        <input id="graphSearch" class="input" type="text" placeholder="Search graphs...">
+                        <span class="icon is-left"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+
+                <div id="graphList" class="menu"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>

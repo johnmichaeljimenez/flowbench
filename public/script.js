@@ -11,6 +11,122 @@ let currentGraphName = null;
 let workingData = null;
 let running = false;
 
+let allGraphs = [];
+
+async function loadGraphList() {
+	try {
+		const res = await fetch('/graphs/list');
+		if (!res.ok) throw new Error('Failed to load graph list');
+		allGraphs = await res.json();
+		return allGraphs;
+	} catch (err) {
+		console.error(err);
+		return [];
+	}
+}
+
+function renderGraphList(filter = '') {
+	const container = document.getElementById('graphList');
+	container.innerHTML = '';
+
+	const filtered = allGraphs.filter(g =>
+		g.displayName.toLowerCase().includes(filter.toLowerCase())
+	);
+
+	if (filtered.length === 0) {
+		container.innerHTML = `<p class="has-text-grey-light p-4">No graphs found.</p>`;
+		return;
+	}
+
+	const ul = document.createElement('ul');
+	ul.className = 'menu-list';
+
+	filtered.forEach(graph => {
+		const li = document.createElement('li');
+		li.innerHTML = `
+            <a href="#" class="graph-item">
+                <span class="icon-text">
+                    <span class="icon"><i class="fas fa-file-code"></i></span>
+                    <span>${graph.displayName}</span>
+                </span>
+            </a>`;
+		li.querySelector('.graph-item').addEventListener('click', async (e) => {
+			e.preventDefault();
+			await loadSelectedGraph(graph.graphName);
+			closeModal();
+		});
+		ul.appendChild(li);
+	});
+
+	container.appendChild(ul);
+}
+
+async function loadSelectedGraph(graphName) {
+	currentGraphName = graphName;
+
+	try {
+		const response = await fetch('/graphs/form', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ graphName })
+		});
+
+		if (!response.ok) throw new Error(await response.text());
+
+		const data = await response.json();
+
+		graphNameEl.textContent = data.meta.name ?? currentGraphName;
+		graphDescEl.textContent = data.meta.description ?? "";
+
+		graphForm.innerHTML = data.formHtml;
+		responseOutput.innerHTML = "";
+
+		workingData = {
+			graphName: currentGraphName,
+			meta: data.meta ?? {}
+		};
+
+		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
+			const filenameEl = document.getElementById(`${input.id}-filename`);
+			if (filenameEl) {
+				input.addEventListener('change', () => {
+					filenameEl.textContent = input.files[0] ? input.files[0].name : 'No file selected';
+				});
+			}
+		});
+
+	} catch (err) {
+		responseOutput.innerHTML = `<div class="notification is-danger">Error loading graph:<br>${err.message}</div>`;
+	}
+}
+
+function openModal() {
+	document.getElementById('graphModal').classList.add('is-active');
+	renderGraphList('');
+	document.getElementById('graphSearch').focus();
+}
+
+function closeModal() {
+	document.getElementById('graphModal').classList.remove('is-active');
+}
+
+loadGraphLink.addEventListener('click', async (event) => {
+	event.preventDefault();
+	if (allGraphs.length === 0) {
+		await loadGraphList();
+	}
+	openModal();
+});
+
+document.getElementById('closeModal').addEventListener('click', closeModal);
+document.getElementById('graphModal').addEventListener('click', (e) => {
+	if (e.target.classList.contains('modal-background')) closeModal();
+});
+
+document.getElementById('graphSearch').addEventListener('input', (e) => {
+	renderGraphList(e.target.value);
+});
+
 window.addEventListener("beforeunload", (e) => {
 	if (!running) return;
 	e.preventDefault();
@@ -125,49 +241,6 @@ const markedWithHighlight = new Marked(
 		}
 	})
 );
-
-loadGraphLink.addEventListener('click', async (event) => {
-	event.preventDefault();
-
-	const graphNameInput = prompt("Enter graph name");
-	if (!graphNameInput) return;
-
-	currentGraphName = graphNameInput.trim();
-
-	try {
-		const response = await fetch('/graphs/form', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ graphName: currentGraphName })
-		});
-
-		if (!response.ok) throw new Error(await response.text());
-
-		const data = await response.json();
-		graphNameEl.textContent = data.meta.name ?? currentGraphName.replace("/index.json", "");
-		graphDescEl.textContent = data.meta.description ?? "";
-
-		graphForm.innerHTML = data.formHtml;
-		responseOutput.innerHTML = "";
-
-		workingData = {
-			graphName: currentGraphName,
-			meta: data.meta ?? {}
-		};
-
-		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
-			const filenameEl = document.getElementById(`${input.id}-filename`);
-			if (filenameEl) {
-				input.addEventListener('change', () => {
-					filenameEl.textContent = input.files[0] ? input.files[0].name : 'No file selected';
-				});
-			}
-		});
-
-	} catch (err) {
-		responseOutput.innerHTML = `<div class="notification is-danger">Error loading graph:<br>${err.message}</div>`;
-	}
-});
 
 async function getParams(form) {
 	const params = {};
