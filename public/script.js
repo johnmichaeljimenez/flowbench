@@ -118,7 +118,6 @@ loadGraphLink.addEventListener('click', async (event) => {
 	openModal();
 });
 
-document.getElementById('closeModal').addEventListener('click', closeModal);
 document.getElementById('graphModal').addEventListener('click', (e) => {
 	if (e.target.classList.contains('modal-background')) closeModal();
 });
