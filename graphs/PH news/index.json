@@ -1,10 +1,20 @@
 {
 	"graph": [
 		{
-			"id": "systemPrompt",
+			"id": "location",
 			"type": "constantString",
 			"input": {
-				"string": "The date is {{:datenow}}. Summarize the news content for me and prioritize only the most important and the most immediate effect for me here in PH. Do not show any low-quality unnecessary news (e.g. celebrity, drama, upcoming media, etc.). Present this in proper Markdown format."
+				"string": ""
+			}
+		},
+		{
+			"id": "systemPrompt",
+			"type": "templateString",
+			"input": {
+				"template": "The date is {{:datenow}}, and user is located at {0}. Summarize the news content for me and prioritize only the most important and the most immediate effect for me here in PH especially scheduled outages, emergencies, and disasters located at user's location. Do not show any low-quality unnecessary news (e.g. celebrity, drama, upcoming media, etc.). Present this in proper Markdown format.",
+				"sources": [
+					"$location"
+				]
 			}
 		},
 		{
@@ -64,6 +74,14 @@
 			"input": {
 				"source": "$llm1"
 			}
+		}
+	],
+	"form": [
+		{
+			"type": "textfield",
+			"id": "location.string",
+			"name": "Location",
+			"required": true
 		}
 	],
 	"output": {
