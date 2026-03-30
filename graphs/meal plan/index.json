@@ -77,13 +77,14 @@
 			"id": "llmResult",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "Generate a meal plan report based on the user's preferences. Include the meal name, calories, serving count, estimated cost, prep time, nutritional breakdown, preparation instructions, and shopping tips, as well as other additional tips. Do not use all ingredients and appliances if not necessary. Important: if the user didn't specify fridge, assume that they don't have one and tell the user about perishability of the meal, otherwise no need to mention the fridge. Present this report in a proper Markdown format.",
+				"systemPrompt": "Generate a meal plan report based on the user's preferences. Include the meal name, calories, serving count, estimated cost, prep time, nutritional breakdown, preparation instructions, and shopping tips, as well as other additional tips. Do not use all ingredients and appliances if not necessary. Important: if the user didn't specify fridge, assume that they don't have one and tell the user about perishability of the meal, otherwise no need to mention the fridge. Use realtime search for updated prices. Present this report in a proper Markdown format that a proper non-techie user can understand properly.",
 				"userPrompt": "$userPrompt",
 				"maxTokens": 4096,
 				"temperature": 0.8,
-				"apiKey": "API_KEY_GEMINI",
-				"baseURL": "BASE_URL_GEMINI",
-				"model": "gemini-3.1-flash-lite-preview"
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning",
+				"useTools": true
 			}
 		},
 		{
