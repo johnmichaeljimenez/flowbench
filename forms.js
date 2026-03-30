@@ -12,6 +12,62 @@ function textfield(element) {
 	`;
 }
 
+function checkbox(element) {
+	const separator = element.separator || ',';
+	const choices = element.choices || [];
+	const defaultIfNone = element.defaultIfNone !== undefined ? element.defaultIfNone : '<EMPTY>';
+
+	let defaultValues = [];
+	const rawDefault = element.defaultValue !== undefined ? element.defaultValue : element.value;
+	if (Array.isArray(rawDefault)) {
+		defaultValues = rawDefault.map(v => String(v).trim());
+	} else if (typeof rawDefault === 'string' && rawDefault.trim() !== '') {
+		defaultValues = rawDefault.split(separator).map(v => v.trim()).filter(Boolean);
+	}
+
+	let checkboxesHTML = '';
+
+	choices.forEach((choice, index) => {
+		let value = '';
+		let display = '';
+
+		if (typeof choice === 'string') {
+			value = display = choice;
+		} else if (choice && typeof choice === 'object') {
+			value = choice.value ?? '';
+			display = choice.display || choice.text || choice.label || value;
+		}
+
+		const isChecked = defaultValues.includes(String(value)) ? ' checked' : '';
+		const checkboxId = `${element.id}_${index}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+		checkboxesHTML += `
+			<label class="checkbox">
+				<input 
+					type="checkbox" 
+					id="${checkboxId}"
+					name="${element.id}" 
+					value="${value}"
+					data-separator="${separator}"
+					data-default-if-none="${defaultIfNone}"
+					${isChecked}
+				>
+				${display}
+			</label>
+		`;
+	});
+
+	return `
+		<label class="label">
+			${element.name || "Select options"}:
+		</label>
+		<div class="control">
+			${checkboxesHTML}
+		</div>
+  		<p class="help">${element.description ?? ""}</p>
+	`;
+}
+
 function textarea(element) {
 	const rows = element.lineCount || 3;
 	const value = element.value || "";
@@ -140,7 +196,8 @@ export default function generateForm(formData) {
 		uploadText,
 		dropdown,
 		number,
-		textarea
+		textarea,
+		checkbox
 	};
 
 	formData.forEach(element => {

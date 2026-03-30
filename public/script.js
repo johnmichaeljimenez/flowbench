@@ -243,7 +243,26 @@ const markedWithHighlight = new Marked(
 
 async function getParams(form) {
 	const params = {};
+	const checkboxGroups = {};
+
 	for (const element of form.elements) {
+		if (element.type === "checkbox") {
+			const groupName = element.name;
+			if (groupName) {
+				if (!checkboxGroups[groupName]) {
+					checkboxGroups[groupName] = {
+						values: [],
+						separator: element.dataset.separator || ',',
+						defaultIfNone: element.dataset.defaultIfNone || ''
+					};
+				}
+				if (element.checked) {
+					checkboxGroups[groupName].values.push(element.value);
+				}
+			}
+			continue;
+		}
+
 		if (!element.id) continue;
 
 		let value;
@@ -267,7 +286,7 @@ async function getParams(form) {
 				throw new Error(`Please upload a file for "${element.id}"`);
 			}
 		} else if (element.type === "checkbox") {
-			value = element.checked;
+			//get all checked values (not display name), then set value as joined string using separator
 		} else if (element.type === "radio") {
 			if (!element.checked) continue;
 			value = element.value;
@@ -278,6 +297,15 @@ async function getParams(form) {
 		}
 		params[element.id] = value;
 	}
+
+	Object.entries(checkboxGroups).forEach(([groupName, data]) => {
+		if (data.values.length > 0) {
+			params[groupName] = data.values.join(data.separator);
+		} else {
+			params[groupName] = data.defaultIfNone;
+		}
+	});
+
 	return params;
 }
 
