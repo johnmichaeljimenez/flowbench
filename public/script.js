@@ -285,8 +285,6 @@ async function getParams(form) {
 			} else if (element.required) {
 				throw new Error(`Please upload a file for "${element.id}"`);
 			}
-		} else if (element.type === "checkbox") {
-			//get all checked values (not display name), then set value as joined string using separator
 		} else if (element.type === "radio") {
 			if (!element.checked) continue;
 			value = element.value;
@@ -294,7 +292,15 @@ async function getParams(form) {
 			value = element.value;
 		} else {
 			value = element.value;
+			console.log(value);
+			if (!element.required && (!value || String(value).trim() === '')) {
+				const defaultIfEmpty = element.dataset.defaultIfEmpty;
+				if (defaultIfEmpty !== undefined) {
+					value = defaultIfEmpty;
+				}
+			}
 		}
+		
 		params[element.id] = value;
 	}
 

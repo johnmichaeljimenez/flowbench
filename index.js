@@ -113,7 +113,7 @@ app.post('/graphs', async (req, res) => {
         const result = await processGraph(graphData, startNode, false, params);
         const output = graphData.output;
         const outputParams = output.cards ?? [];
-        console.log(output);
+        
         let filteredOutput = [];
 
         if (outputParams.length > 0) {

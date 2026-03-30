@@ -1,4 +1,6 @@
 function textfield(element) {
+	const defaultIfEmpty = element.defaultValue !== undefined ? element.defaultValue : '';
+
 	return `
 		<label class="label" for="${element.id}">
 			${element.name || ""}:
@@ -6,7 +8,8 @@ function textfield(element) {
 		<div class="control">
 			<input class="input" type="text" id="${element.id}" value="${element.value || ""}"
 			${element.required ? "required" : ""}
-			${element.autoclear ? 'data-autoclear="true"' : ""}>
+			${element.autoclear ? 'data-autoclear="true"' : ""}
+			data-default-if-empty="${defaultIfEmpty}">
 		</div>
   		<p class="help">${element.description ?? ""}</p>
 	`;
@@ -71,6 +74,7 @@ function checkbox(element) {
 function textarea(element) {
 	const rows = element.lineCount || 3;
 	const value = element.value || "";
+	const defaultIfEmpty = element.defaultValue !== undefined ? element.defaultValue : '';
 
 	return `
     <label class="label" for="${element.id}">
@@ -83,6 +87,7 @@ function textarea(element) {
         rows="${rows}" 
         ${element.required ? "required" : ""}
         ${element.autoclear ? 'data-autoclear="true"' : ""}
+		data-default-if-empty="${defaultIfEmpty}"
       >${value}</textarea>
     </div>
     <p class="help">${element.description || ""}</p>
