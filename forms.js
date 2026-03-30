@@ -42,7 +42,7 @@ function checkbox(element) {
 		const checkboxId = `${element.id}_${index}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
 		checkboxesHTML += `
-			<label class="checkbox">
+			<label class="checkbox" for="${checkboxId}">
 				<input 
 					type="checkbox" 
 					id="${checkboxId}"
