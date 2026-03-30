@@ -1,0 +1,203 @@
+{
+	"graph": [
+		{
+			"id": "ingredients",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "location",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "preferences",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "appliances",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "calories",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "serving",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "budget",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "userPrompt",
+			"type": "templateString",
+			"input":{
+				"template": "Ingredients:\n{0}\n\nLocation:\n{1}\n\nDietary Preferences:\n{2}\n\nAvailable Appliances:\n{3}\n\nCalories per serving:\n{4}\n\nEstimated Serving Count:\n{5}\n\nMax Budget:\n{6}",
+				"sources": [
+					"$ingredients", "$location", "$preferences", "$appliances", "$calories", "$serving", "$budget"
+				]
+			}
+		},
+		{
+			"id": "llmResult",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Generate a meal plan report based on the user's preferences. Include the meal name, calories, serving count, estimated cost, prep time, nutritional breakdown, preparation instructions, and shopping tips, as well as other additional tips. Important: if the user didn't specify fridge, assume that they don't have one and tell the user about perishability of the meal. Present this report in a proper Markdown format.",
+				"userPrompt": "$userPrompt",
+				"maxTokens": 4096,
+				"temperature": 0.8,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$llmResult"
+			}
+		}
+	],
+	"form": [
+		{
+			"type": "textarea",
+			"id": "ingredients.string",
+			"name": "Available Ingredients",
+			"value": "",
+			"required": true
+		},
+		{
+			"type": "textfield",
+			"id": "location.string",
+			"name": "Location (City, Town, etc)",
+			"value": "",
+			"required": true
+		},
+		{
+			"type": "checkbox",
+			"id": "preferences.string",
+			"name": "Dietary Preferences",
+			"defaultIfNone": "<Any>",
+			"choices": [
+				{
+					"value": "High Protein"
+				},
+				{
+					"value": "Low Carb"
+				},
+				{
+					"value": "Low Fat"
+				},
+				{
+					"value": "No Sugar"
+				},
+				{
+					"value": "No Salt"
+				},
+				{
+					"value": "Vegan"
+				},
+				{
+					"value": "Vegan and Fish"
+				}
+			]
+		},
+		{
+			"type": "checkbox",
+			"id": "appliances.string",
+			"name": "Available appliances",
+			"defaultIfNone": "<No available appliances>",
+			"choices": [
+				{
+					"value": "Microwave Oven"
+				},
+				{
+					"value": "Baking Oven"
+				},
+				{
+					"value": "Induction Cooker"
+				},
+				{
+					"value": "Blender"
+				},
+				{
+					"value": "Air Fryer"
+				},
+				{
+					"value": "Fridge"
+				},
+				{
+					"value": "Nonstick pan"
+				},
+				{
+					"value": "Rice Cooker"
+				}
+			]
+		},
+		{
+			"type": "number",
+			"id": "calories.string",
+			"name": "Target Calories per meal",
+			"minRange": 100,
+			"maxRange": 5000,
+			"value": 300,
+			"required": true
+		},
+		{
+			"type": "number",
+			"id": "serving.string",
+			"name": "Serving count",
+			"minRange": 1,
+			"maxRange": 100,
+			"value": 1,
+			"required": true
+		},
+		{
+			"type": "number",
+			"id": "budget.string",
+			"name": "Budget (PHP)",
+			"minRange": 100,
+			"maxRange": 50000,
+			"value": 3000,
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Result",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "Meal Plan maker",
+		"description": "Create a full meal plan based on your available ingredients, target calories, budget, and dietary preferences.",
+		"notifyOnEnd": true
+	}
+}
