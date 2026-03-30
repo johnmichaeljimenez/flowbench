@@ -22,6 +22,13 @@
 			}
 		},
 		{
+			"id": "conditions",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
 			"id": "appliances",
 			"type": "constantString",
 			"input": {
@@ -52,10 +59,17 @@
 		{
 			"id": "userPrompt",
 			"type": "templateString",
-			"input":{
-				"template": "Ingredients:\n{0}\n\nLocation:\n{1}\n\nDietary Preferences:\n{2}\n\nAvailable Appliances:\n{3}\n\nCalories per serving:\n{4}\n\nEstimated Serving Count:\n{5}\n\nMax Budget:\n{6}",
+			"input": {
+				"template": "Ingredients:\n{0}\n\nLocation:\n{1}\n\nDietary Preferences:\n{2}\n\nHealth Conditions:\n{3}\n\nAvailable Appliances:\n{4}\n\nCalories per serving:\n{5}\n\nEstimated Serving Count:\n{6}\n\nMax Budget:\n{7}",
 				"sources": [
-					"$ingredients", "$location", "$preferences", "$appliances", "$calories", "$serving", "$budget"
+					"$ingredients",
+					"$location",
+					"$preferences",
+					"$conditions",
+					"$appliances",
+					"$calories",
+					"$serving",
+					"$budget"
 				]
 			}
 		},
@@ -63,7 +77,7 @@
 			"id": "llmResult",
 			"type": "callLLM",
 			"input": {
-				"systemPrompt": "Generate a meal plan report based on the user's preferences. Include the meal name, calories, serving count, estimated cost, prep time, nutritional breakdown, preparation instructions, and shopping tips, as well as other additional tips. Important: if the user didn't specify fridge, assume that they don't have one and tell the user about perishability of the meal. Present this report in a proper Markdown format.",
+				"systemPrompt": "Generate a meal plan report based on the user's preferences. Include the meal name, calories, serving count, estimated cost, prep time, nutritional breakdown, preparation instructions, and shopping tips, as well as other additional tips. Do not use all ingredients and appliances if not necessary. Important: if the user didn't specify fridge, assume that they don't have one and tell the user about perishability of the meal, otherwise no need to mention the fridge. Present this report in a proper Markdown format.",
 				"userPrompt": "$userPrompt",
 				"maxTokens": 4096,
 				"temperature": 0.8,
@@ -72,14 +86,27 @@
 				"model": "gemini-3.1-flash-lite-preview"
 			}
 		},
-
+		{
+			"id": "report",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$llmResult",
+				"path": "./.temp/reports/meal-plan-{{:datenow}}.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		},
 		{
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "$llmResult"
+				"source": "Meal plan generated!"
 			}
 		}
+	],
+	"entryPoints": [
+		"report",
+		"out1"
 	],
 	"form": [
 		{
@@ -115,9 +142,6 @@
 					"value": "No Sugar"
 				},
 				{
-					"value": "No Salt"
-				},
-				{
 					"value": "Vegan"
 				},
 				{
@@ -132,30 +156,46 @@
 			"defaultIfNone": "<No available appliances>",
 			"choices": [
 				{
+					"value": "Rice Cooker"
+				},
+				{
+					"value": "Gas Stove"
+				},
+				{
+					"value": "Induction Cooker"
+				},
+				{
+					"value": "Fridge"
+				},
+				{
 					"value": "Microwave Oven"
 				},
 				{
 					"value": "Baking Oven"
 				},
 				{
-					"value": "Induction Cooker"
+					"value": "Blender"
 				},
 				{
-					"value": "Blender"
+					"value": "Food Processor"
 				},
 				{
 					"value": "Air Fryer"
 				},
 				{
-					"value": "Fridge"
-				},
-				{
 					"value": "Nonstick pan"
 				},
 				{
-					"value": "Rice Cooker"
+					"value": "Grill"
 				}
 			]
+		},
+		{
+			"type": "textfield",
+			"id": "conditions.string",
+			"name": "Current Health conditions (allergies, spice tolerance, lactose intolerance, etc.)",
+			"value": "<None>",
+			"defaultValue": "<None>"
 		},
 		{
 			"type": "number",
@@ -181,16 +221,16 @@
 			"name": "Budget (PHP)",
 			"minRange": 100,
 			"maxRange": 50000,
-			"value": 3000,
+			"value": 400,
 			"required": true
 		}
 	],
 	"output": {
 		"cards": [
 			{
-				"id": "out1.value",
+				"id": "report.value",
 				"type": "text",
-				"name": "Result",
+				"name": "Meal Plan Report",
 				"format": "markdown"
 			}
 		]
