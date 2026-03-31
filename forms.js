@@ -9,6 +9,7 @@ function textfield(element) {
 			<input class="input" type="text" id="${element.id}" value="${element.value || ""}"
 			${element.required ? "required" : ""}
 			${element.autoclear ? 'data-autoclear="true"' : ""}
+			${element.storeLast ? 'data-store-last="true"' : ""}
 			data-default-if-empty="${defaultIfEmpty}">
 		</div>
   		<p class="help">${element.description ?? ""}</p>
@@ -53,6 +54,7 @@ function checkbox(element) {
 					value="${value}"
 					data-separator="${separator}"
 					data-default-if-none="${defaultIfNone}"
+                    ${element.storeLast ? 'data-store-last="true"' : ""}
 					${isChecked}
 				>
 				${display}
@@ -87,6 +89,7 @@ function textarea(element) {
         rows="${rows}" 
         ${element.required ? "required" : ""}
         ${element.autoclear ? 'data-autoclear="true"' : ""}
+		${element.storeLast ? 'data-store-last="true"' : ""}
 		data-default-if-empty="${defaultIfEmpty}"
       >${value}</textarea>
     </div>
@@ -109,7 +112,8 @@ function number(element) {
         class="input" 
         type="number" 
         id="${element.id}" 
-        value="${value}" 
+        value="${value}"
+		${element.storeLast ? 'data-store-last="true"' : ""}
         ${minRange} 
         ${maxRange} 
         ${step}
@@ -181,9 +185,11 @@ function dropdown(element) {
 		<div class="control">
 			<div class="select is-fullwidth">
 				<select 
-          id="${element.id}" 
-          name="${element.id}"
-          ${element.required ? "required" : ""}>
+					id="${element.id}" 
+					name="${element.id}"
+		  
+					${element.storeLast ? 'data-store-last="true"' : ""}
+					${element.required ? "required" : ""}>
 					${optionsHTML}
 				</select>
 			</div>

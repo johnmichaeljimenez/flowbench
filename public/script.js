@@ -62,6 +62,9 @@ function renderGraphList(filter = '') {
 }
 
 async function loadSelectedGraph(graphName) {
+	if (workingData)
+		saveLastValues(graphForm);
+	
 	currentGraphName = graphName;
 
 	try {
@@ -85,6 +88,8 @@ async function loadSelectedGraph(graphName) {
 			graphName: currentGraphName,
 			meta: data.meta ?? {}
 		};
+
+		loadLastValues(graphForm);
 
 		graphForm.querySelectorAll('input[type="file"]').forEach(input => {
 			const filenameEl = document.getElementById(`${input.id}-filename`);
@@ -127,7 +132,10 @@ document.getElementById('graphSearch').addEventListener('input', (e) => {
 });
 
 window.addEventListener("beforeunload", (e) => {
-	if (!running) return;
+	if (!running) {
+		saveLastValues(graphForm);
+		return;
+	}
 	e.preventDefault();
 });
 
@@ -241,6 +249,65 @@ const markedWithHighlight = new Marked(
 	})
 );
 
+function saveLastValues(form) {
+	const graphKey = `flowbench_last_${currentGraphName}`;
+	const saved = {};
+
+	for (const element of form.elements) {
+		if (!element.id || element.dataset.storeLast !== "true") continue;
+
+		let value;
+		if (element.type === "checkbox") {
+			value = element.checked;
+		} else if (element.type === "number") {
+			value = element.value; // let the input handle conversion
+		} else if (element.type === "file") {
+			continue; //no need
+		} else {
+			value = element.value;
+		}
+
+		if (value !== undefined && value !== null) {
+			saved[element.id] = value;
+			console.log(`saved: ${element.id} = ${value}`);
+		}
+	}
+
+	localStorage.setItem(graphKey, JSON.stringify(saved));
+}
+
+function loadLastValues(form) {
+	if (!currentGraphName) return;
+
+	const graphKey = `flowbench_last_${currentGraphName}`;
+	const savedJson = localStorage.getItem(graphKey);
+
+	if (!savedJson) return;
+
+	let saved;
+	try {
+		saved = JSON.parse(savedJson);
+	} catch (e) {
+		console.warn("Failed to parse saved form data");
+		return;
+	}
+
+	console.log(saved);
+	for (const element of form.elements) {
+		if (!element.id || element.dataset.storeLast !== "true") continue;
+
+		const value = saved[element.id];
+		console.log(`loaded: ${element.id} = ${value}`);
+		if (value === undefined) continue;
+
+		if (element.type === "checkbox") {
+			element.checked = !!value;
+		} else if (element.type !== "file") {
+			element.value = value;
+		}
+	}
+}
+
 async function getParams(form) {
 	const params = {};
 	const checkboxGroups = {};
@@ -285,14 +352,10 @@ async function getParams(form) {
 			} else if (element.required) {
 				throw new Error(`Please upload a file for "${element.id}"`);
 			}
-		} else if (element.type === "radio") {
-			if (!element.checked) continue;
-			value = element.value;
 		} else if (element.tagName.toLowerCase() === "select") {
 			value = element.value;
 		} else {
 			value = element.value;
-			console.log(value);
 			if (!element.required && (!value || String(value).trim() === '')) {
 				const defaultIfEmpty = element.dataset.defaultIfEmpty;
 				if (defaultIfEmpty !== undefined) {
@@ -300,7 +363,7 @@ async function getParams(form) {
 				}
 			}
 		}
-		
+
 		params[element.id] = value;
 	}
 
@@ -401,6 +464,8 @@ function renderResults() {
 async function runGraph(event) {
 	event.preventDefault();
 	if (running || !currentGraphName) return;
+
+	saveLastValues(graphForm);
 
 	if (!workingData.meta?.disableConfirm && !confirm("Run this graph?"))
 		return;
