@@ -1,0 +1,33 @@
+{
+   "name": "Flowbench",
+   "about": "", //short description of this project that captures users' attention, emphasize non-dev usage too
+   "key features": [ //list all top strengths, the CLI and web UI mode, and the node system, prioritize "this README is self-generated with meta/readme graph"
+
+   ],
+   "getting started": [ //include project setup, as well as how to use both CLI and web UI mode too
+
+   ],
+   "usage": [ //show how does the nodes and graph work so a dev can learn how to make custom graph
+
+   ],
+   "example graphs": [ //list all of them here including readme, sort by the best graph first
+      {
+         "name" :"",
+         "description": "",
+         "key features": "",
+         "used for": ""
+      }
+   ],
+   "node list": [ //list all of them here, strictly use the nodeMetadata in each node for reference. emohasize that executeShell is disabled/stubbed for now
+      {
+         "name": "",
+         "parameters": "",
+         "outputs": "",
+         "used for": ""
+      }
+   ],
+	"roadmap": [ //use TODO.txt current tasks here, clean it up and provide clear description on each item. do not mention any "Date Added", only the tasks themselves.
+
+	],
+   "license": "Distributed under the MIT License. See LICENSE for more information." //use this as-is
+}

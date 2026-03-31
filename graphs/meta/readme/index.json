@@ -1,0 +1,126 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "readmeTemplate",
+			"type": "readFromTextFile",
+			"input": {
+				"path": "./template.jsonc"
+			}
+		},
+		{
+			"id": "blob",
+			"type": "loadTextBlob",
+			"input": {
+				"path": "E:/projects/flowbench",
+				"whitelist": ".js;.json;.txt",
+				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports"
+			}
+		},
+		{
+			"id": "blobQuery",
+			"type": "templateString",
+			"input": {
+				"template": "========[JSON]=========\n\n{0}\n\n\n============[SOURCE CODE]==============\n\n\n\n\n{1}",
+				"sources": [
+					"$readmeTemplate",
+					"$blob"
+				]
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$userQuestion",
+				"userPrompt": "$blobQuery",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.7,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "llm-decor",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Turn the input JSON file into a real README text document for a public Github repo. Do not add, remove, or change anything in the content, just make it into a proper Markdown README format with clear formatting and sections. Feel free to use emojis for clarity.",
+				"userPrompt": "$llm1",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.2,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "query",
+			"type": "choose",
+			"input": {
+				"condition": false,
+				"trueSource": "$llm1",
+				"falseSource": "$llm-decor"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$query",
+				"path": "../../../README.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userQuestion.string",
+			"name": "Enter instructions",
+			"value": "Use the source code and example graphs to fill up the JSON template provided and output only the said JSON file format in full detail, Use a professional and pragmatic tone while still highlighting key strengths properly (ex. do not shorten phrases or terms unless absolutely necessary). For context, this repo's URL is https://github.com/johnmichaeljimenez/flowbench",
+			"type": "textarea",
+			"required": true
+		},
+		{
+			"type": "dropdown",
+			"id": "query.condition",
+			"name": "JSON skeleton only",
+			"data": [
+				{
+					"value": "true",
+					"display": "Yes"
+				},
+				{
+					"value": "false",
+					"display": "No"
+				}
+			],
+			"defaultValue": "true",
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Response",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "Flowbench README",
+		"description": "Self-improving README generator",
+		"notifyOnEnd": true
+	}
+}
