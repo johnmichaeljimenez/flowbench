@@ -60,7 +60,7 @@
 			"id": "userPrompt",
 			"type": "templateString",
 			"input": {
-				"template": "Ingredients:\n{0}\n\nLocation:\n{1}\n\nDietary Preferences:\n{2}\n\nHealth Conditions:\n{3}\n\nAvailable Appliances:\n{4}\n\nCalories per serving:\n{5}\n\nEstimated Serving Count:\n{6}\n\nMax Budget:\n{7}",
+				"template": "Ingredients:\n{0}\n\nLocation:\n{1}\n\nDietary Preferences:\n{2}\n\nHealth Conditions:\n{3}\n\nAvailable Appliances:\n{4}\n\nCalories per serving:\n{5}\n\nEstimated Serving Count:\n{6}\n\nMax Budget (PHP):\n{7}",
 				"sources": [
 					"$ingredients",
 					"$location",
@@ -115,14 +115,16 @@
 			"id": "ingredients.string",
 			"name": "Available Ingredients",
 			"value": "",
-			"required": true
+			"required": true,
+			"storeLast": true
 		},
 		{
 			"type": "textfield",
 			"id": "location.string",
 			"name": "Location (City, Town, etc)",
 			"value": "",
-			"required": true
+			"required": true,
+			"storeLast": true
 		},
 		{
 			"type": "checkbox",
@@ -148,7 +150,8 @@
 				{
 					"value": "Vegan and Fish"
 				}
-			]
+			],
+			"storeLast": true
 		},
 		{
 			"type": "checkbox",
@@ -189,14 +192,16 @@
 				{
 					"value": "Grill"
 				}
-			]
+			],
+			"storeLast": true
 		},
 		{
 			"type": "textfield",
 			"id": "conditions.string",
 			"name": "Current Health conditions (allergies, spice tolerance, lactose intolerance, etc.)",
 			"value": "<None>",
-			"defaultValue": "<None>"
+			"defaultValue": "<None>",
+			"storeLast": true
 		},
 		{
 			"type": "number",
@@ -205,7 +210,8 @@
 			"minRange": 100,
 			"maxRange": 5000,
 			"value": 300,
-			"required": true
+			"required": true,
+			"storeLast": true
 		},
 		{
 			"type": "number",
@@ -214,7 +220,8 @@
 			"minRange": 1,
 			"maxRange": 100,
 			"value": 1,
-			"required": true
+			"required": true,
+			"storeLast": true
 		},
 		{
 			"type": "number",
@@ -223,7 +230,8 @@
 			"minRange": 100,
 			"maxRange": 50000,
 			"value": 400,
-			"required": true
+			"required": true,
+			"storeLast": true
 		}
 	],
 	"output": {
