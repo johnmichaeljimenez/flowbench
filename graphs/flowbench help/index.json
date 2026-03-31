@@ -67,12 +67,14 @@
 			"name": "Enter inquiry",
 			"value": null,
 			"type": "textarea",
+			"storeLast": true,
 			"required": true
 		},
 		{
 			"type": "dropdown",
 			"id": "query.condition",
 			"name": "Text Blob only",
+			"storeLast": true,
 			"data": [
 				{
 					"value": "true",
