@@ -309,8 +309,8 @@ function loadLastValues(form) {
 			element.checked = !!value;
 		} else if (element.type !== "file") {
 			//only load the saved localStorage value if form input has no default value provided
-			const isCurrentlyEmpty = element.type === "select-one" || element.value.trim() === "";
-			if (isCurrentlyEmpty) {
+			const strVal = String(value).trim();
+			if (strVal !== '') {
 				element.value = value;
 			}
 		}
