@@ -401,36 +401,65 @@ function renderResults() {
 		if (element.type === "text") {
 			const container = document.createElement("div");
 			container.classList.add("box");
-			container.innerText = element.name ?? "";
+
+			const header = document.createElement("div");
+			header.classList.add("is-flex", "is-justify-content-space-between", "is-align-items-center", "mb-3");
+
+			const label = document.createElement("div");
+			label.classList.add("tag");
+			label.textContent = element.name;
+			header.appendChild(label);
 
 			const copyBtn = document.createElement("button");
-			copyBtn.innerText = "Copy";
-			copyBtn.classList.add("button");
-			copyBtn.classList.add("is-info");
+			copyBtn.classList.add("button", "is-medium", "is-ghost");
 
-			copyBtn.onclick = () => navigator.clipboard.writeText(workingData.results[index].value ?? "");
-			container.appendChild(copyBtn);
+			copyBtn.innerHTML = `
+        <span class="icon">
+            <i class="fas fa-copy"></i>
+        </span>
+    `;
 
-			container.appendChild(document.createElement("hr"));
+			copyBtn.onclick = () => {
+				navigator.clipboard.writeText(workingData.results[index].value ?? "");
+
+				const originalHTML = copyBtn.innerHTML;
+				copyBtn.innerHTML = `
+            <span class="icon">
+                <i class="fas fa-check"></i>
+            </span>
+        `;
+				copyBtn.classList.add("is-success");
+
+				setTimeout(() => {
+					copyBtn.innerHTML = originalHTML;
+					copyBtn.classList.remove("is-success");
+				}, 1500);
+			};
+
+			header.appendChild(copyBtn);
+			container.appendChild(header);
+
+			// container.appendChild(document.createElement("hr"));
+
 			const txt = document.createElement("div");
-			const format = (element.format || '').toLowerCase();
+			txt.classList.add("content");
 
+			const format = (element.format || '').toLowerCase();
 			if (format === "markdown") {
-				txt.innerHTML = markedWithHighlight.parse(element.value)
+				txt.innerHTML = markedWithHighlight.parse(element.value);
 			} else if (format === "csv") {
 				txt.innerHTML = delimitedToHtmlTable(element.value, ',');
 			} else if (format === "tsv") {
 				txt.innerHTML = delimitedToHtmlTable(element.value, '\t');
-			}
-			else {
+			} else {
 				txt.innerText = element.value ?? "<EMPTY>";
 			}
 
 			txt.querySelectorAll("table").forEach(table => {
 				table.classList.add("table", "is-bordered", "is-striped", "is-hoverable", "is-fullwidth");
 			});
-			container.appendChild(txt);
 
+			container.appendChild(txt);
 			responseOutput.appendChild(container);
 		} else if (element.type === "downloadText") {
 			const downloadBtn = document.createElement("button");
