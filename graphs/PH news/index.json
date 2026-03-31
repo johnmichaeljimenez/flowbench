@@ -81,7 +81,8 @@
 			"type": "textfield",
 			"id": "location.string",
 			"name": "Location",
-			"required": true
+			"required": true,
+			"storeLast": true
 		}
 	],
 	"output": {
