@@ -117,6 +117,10 @@ function closeModal() {
 
 loadGraphLink.addEventListener('click', async (event) => {
 	event.preventDefault();
+
+	if (running) //dont switch graphs while running (TODO: add proper message)
+		return;
+
 	if (allGraphs.length === 0) {
 		await loadGraphList();
 	}
