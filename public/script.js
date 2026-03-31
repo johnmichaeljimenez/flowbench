@@ -1,6 +1,8 @@
 const { Marked } = globalThis.marked;
 const { markedHighlight } = globalThis.markedHighlight;
 
+const keyLastUsedGraph = `flowbench_last_used_graph`;
+
 const loadGraphLink = document.getElementById('loadGraph');
 const responseOutput = document.getElementById('responseOutput');
 const graphForm = document.getElementById('graphForm');
@@ -18,6 +20,7 @@ async function loadGraphList() {
 		const res = await fetch('/graphs/list');
 		if (!res.ok) throw new Error('Failed to load graph list');
 		allGraphs = await res.json();
+
 		return allGraphs;
 	} catch (err) {
 		console.error(err);
@@ -66,6 +69,7 @@ async function loadSelectedGraph(graphName) {
 		saveLastValues(graphForm);
 
 	currentGraphName = graphName;
+	localStorage.setItem(keyLastUsedGraph, graphName);
 
 	try {
 		const response = await fetch('/graphs/form', {
@@ -102,6 +106,7 @@ async function loadSelectedGraph(graphName) {
 
 	} catch (err) {
 		responseOutput.innerHTML = `<div class="notification is-danger">Error loading graph:<br>${err.message}</div>`;
+		localStorage.removeItem(keyLastUsedGraph);
 	}
 }
 
@@ -539,4 +544,9 @@ async function runGraph(event) {
 		if (submitBtn) submitBtn.classList.remove("is-loading");
 		running = false;
 	}
+}
+
+const lastUsed = localStorage.getItem(keyLastUsedGraph);
+if (lastUsed) {
+	loadSelectedGraph(lastUsed);
 }
