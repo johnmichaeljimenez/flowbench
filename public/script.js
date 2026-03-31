@@ -64,7 +64,7 @@ function renderGraphList(filter = '') {
 async function loadSelectedGraph(graphName) {
 	if (workingData)
 		saveLastValues(graphForm);
-	
+
 	currentGraphName = graphName;
 
 	try {
@@ -258,6 +258,9 @@ function saveLastValues(form) {
 	const saved = {};
 
 	for (const element of form.elements) {
+		if (element.type === "file")
+			continue; //no need
+
 		if (!element.id || element.dataset.storeLast !== "true") continue;
 
 		let value;
@@ -265,16 +268,12 @@ function saveLastValues(form) {
 			value = element.checked;
 		} else if (element.type === "number") {
 			value = element.value; // let the input handle conversion
-		} else if (element.type === "file") {
-			continue; //no need
 		} else {
 			value = element.value;
 		}
 
-		if (value !== undefined && value !== null) {
-			saved[element.id] = value;
-			console.log(`saved: ${element.id} = ${value}`);
-		}
+		saved[element.id] = value;
+		// console.log(`saved: ${element.id} = ${value}`);
 	}
 
 	localStorage.setItem(graphKey, JSON.stringify(saved));
@@ -296,18 +295,24 @@ function loadLastValues(form) {
 		return;
 	}
 
-	console.log(saved);
+	// console.log(saved);
 	for (const element of form.elements) {
 		if (!element.id || element.dataset.storeLast !== "true") continue;
 
 		const value = saved[element.id];
-		console.log(`loaded: ${element.id} = ${value}`);
-		if (value === undefined) continue;
+
+		if (value === undefined || value === null) continue;
+
+		// console.log(`loaded: ${element.id} = ${value}`);
 
 		if (element.type === "checkbox") {
 			element.checked = !!value;
 		} else if (element.type !== "file") {
-			element.value = value;
+			//only load the saved localStorage value if form input has no default value provided
+			const isCurrentlyEmpty = element.type === "select-one" || element.value.trim() === "";
+			if (isCurrentlyEmpty) {
+				element.value = value;
+			}
 		}
 	}
 }
