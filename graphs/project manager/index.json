@@ -71,8 +71,8 @@
 			"type": "loadTextBlob",
 			"input": {
 				"path": "$projectPath",
-				"whitelist": ".js;.json;.html;.css;.txt",
-				"blacklist": "package-lock.json;reports;graphs;.temp"
+				"whitelist": ".js;.json;.html;.css;.md",
+				"blacklist": "package-lock.json;reports;.temp"
 			}
 		},
 		{
