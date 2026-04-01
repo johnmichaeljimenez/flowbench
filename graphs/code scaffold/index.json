@@ -1,0 +1,117 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "jsonScaffold",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "userPrompt",
+			"type": "templateString",
+			"input": {
+				"template": "{0}\n\n{1}",
+				"sources": [
+					"$userQuestion",
+					"$jsonScaffold"
+				]
+			}
+		},
+		{
+			"id": "llm1",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Follow the user's request and output only a full JSON text containing {<filePath>: <content>} key value pair array and nothing else, where filePath = actual filename + extension, and content = direct full file content. ex: \"README.md\": \"# Generated Project\"",
+				"userPrompt": "$userPrompt",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "query",
+			"type": "choose",
+			"input": {
+				"condition": false,
+				"trueSource": "$jsonScaffold",
+				"falseSource": "$llm1"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeBatchToTextFile",
+			"input": {
+				"sources": "$query",
+				"encoding": "utf-8",
+				"forceWrite": true
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userQuestion.string",
+			"name": "Enter instructions",
+			"value": "",
+			"type": "textarea",
+			"storeLast": true,
+			"required": true
+		},
+		{
+			"id": "jsonScaffold.string",
+			"name": "JSON scaffold file",
+			"type": "uploadText",
+			"accept": ".json;.txt",
+			"required": true
+		},
+		{
+			"type": "textfield",
+			"id": "out1.path",
+			"name": "Base folder path",
+			"value": "",
+			"storeLast": true
+		},
+		{
+			"type": "dropdown",
+			"id": "query.condition",
+			"name": "Direct JSON input",
+			"data": [
+				{
+					"value": "false",
+					"display": "No"
+				},
+				{
+					"value": "true",
+					"display": "Yes"
+				}
+			],
+			"defaultValue": "false",
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Response",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "Code Scaffold",
+		"description": "Coding project assistant with batch file writing",
+		"notifyOnEnd": true
+	}
+}

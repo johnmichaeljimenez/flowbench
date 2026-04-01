@@ -1,0 +1,7 @@
+{
+	"game.h": "header file for game.c",
+	"game.c": "gameplay stuff, contains player and level struct and gameplay code",
+	"program.h": "header file for program.c",
+	"program.c": "contains main(), system setup and uses game.h (gameplay code)",
+	"build.bat": "Batch file that I can run in Windows 10 to build this Raylib project using gcc"
+}
