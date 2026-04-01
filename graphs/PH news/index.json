@@ -11,7 +11,7 @@
 			"id": "systemPrompt",
 			"type": "templateString",
 			"input": {
-				"template": "The date is {{:datenow}}, and user is located at {0}. Summarize the news content for me and prioritize only the most important and the most immediate effect for me here in PH especially scheduled outages, emergencies, and disasters located at user's location. Do not show any low-quality unnecessary news (e.g. celebrity, drama, upcoming media, etc.). Present this in proper Markdown format.",
+				"template": "The date is {{:datenow}}, and user is located at {0}. Summarize the news content and prioritize only the most important and the most direct, immediate effect for the user especially weather, scheduled outages, emergencies, and disasters located at user's location. Do not show any low-quality unnecessary news (e.g. celebrity, drama, upcoming media, etc.). Present this in proper Markdown format, and include header containing current date and user's location.",
 				"sources": [
 					"$location"
 				]
@@ -21,7 +21,7 @@
 			"id": "news1",
 			"type": "fetchRss",
 			"input": {
-				"url": "https://www.manilatimes.net/news/feed/",
+				"url": "",
 				"fields": {
 					"items": [
 						"title",
@@ -34,7 +34,20 @@
 			"id": "news2",
 			"type": "fetchRss",
 			"input": {
-				"url": "https://www.philstar.com/rss/headlines",
+				"url": "",
+				"fields": {
+					"items": [
+						"title",
+						"description"
+					]
+				}
+			}
+		},
+		{
+			"id": "news3",
+			"type": "fetchRss",
+			"input": {
+				"url": "",
 				"fields": {
 					"items": [
 						"title",
@@ -49,7 +62,8 @@
 			"input": {
 				"sources": [
 					"$news1",
-					"$news2"
+					"$news2",
+					"$news3"
 				],
 				"separator": "\n\n\n\n"
 			}
@@ -69,18 +83,56 @@
 			}
 		},
 		{
+			"id": "report",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$llm1",
+				"path": "./.temp/reports/news-{{:datenow}}.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		},
+		{
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "$llm1"
+				"source": "Report generated! Saved at reports/news-{{:datenow}}.md"
 			}
 		}
+	],
+	"entryPoints": [
+		"report",
+		"out1"
 	],
 	"form": [
 		{
 			"type": "textfield",
 			"id": "location.string",
 			"name": "Location",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "news1.url",
+			"name": "News link 1 (RSS)",
+			"value": "https://www.manilatimes.net/news/feed/",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "news2.url",
+			"name": "News link 2 (RSS)",
+			"value": "https://www.philstar.com/rss/headlines",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "news3.url",
+			"name": "News link 3 (RSS)",
+			"value": "https://data.gmanetwork.com/gno/rss/weather/feed.xml",
 			"required": true,
 			"storeLast": true
 		}
@@ -97,7 +149,7 @@
 	},
 	"meta": {
 		"name": "PH Latest news",
-		"description": "Up-to-date important news via RSS data.",
+		"description": "Up-to-date important news via RSS 2.0-compatible source aggregation.",
 		"notifyOnEnd": true
 	}
 }
