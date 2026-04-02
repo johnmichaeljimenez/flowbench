@@ -1,0 +1,75 @@
+{
+	"graph": [
+		{
+			"id": "chessLog",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "llm",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Analyze the chess log and output it per line enclosed in brackets as [move] [technical commentary] [tension level and reason if > low (low, medium, high, extreme). blunders and threats must be high. peak moments and endgame must be extreme].",
+				"userPrompt": "$chessLog",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "script",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "Use the input log (lines are [move][commentary][tension level + reason] into a dramatic fictional urban SWAT radio chatter. Do not use any chess-related names and terms, use only SWAT radio chatter jargons and dialogues. Use em dash symbol at end of a line to make it quickly interrupted by the next line only for high-tension moments. Feel free to use mature language on high-tension moments when necessary to increase drama. Output it in a strict JSON format of array containing \"Unit\": \"Message\" object pair.",
+				"userPrompt": "$llm",
+				"maxTokens": 4096,
+				"temperature": 0.2,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$script"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "chessLog.string",
+			"name": "Chess Log",
+			"value": "1. e4 e5\n2. Nf3 d6\n3. d4 Bg4\n4. dxe5 Bxf3\n5. Qxf3 dxe5\n6. Bc4 Nf6\n7. Qb3 Qe7\n8. Nc3 c6\n9. Bg5 b5\n10. Nxb5 cxb5\n11. Bxb5+ Nbd7\n12. O-O-O Rd8\n13. Rxd7 Rxd7\n14. Rd1 Qe6\n15. Bxd7+ Nxd7\n16. Qb8+ Nxb8\n17. Rd8#",
+			"type": "textarea",
+			"lineCount": 10,
+			"required": true,
+			"storeLast": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "llm.value",
+				"type": "text",
+				"name": "Analysis"
+			},
+			{
+				"id": "script.value",
+				"type": "text",
+				"name": "Script"
+			}
+		]
+	},
+	"meta": {
+		"name": "Chess SWAT dramatization",
+		"description": "Paste a chess game (in move list format) and watch it transform into intense urban SWAT team radio chatter script.",
+		"disableConfirm": true,
+		"notifyOnEnd": true
+	}
+}
