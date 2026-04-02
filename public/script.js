@@ -415,24 +415,26 @@ function renderResults() {
 			label.textContent = element.name;
 			header.appendChild(label);
 
+			const btnGroup = document.createElement("div");
+
 			const copyBtn = document.createElement("button");
 			copyBtn.classList.add("button", "is-medium", "is-ghost");
 
 			copyBtn.innerHTML = `
-        <span class="icon">
-            <i class="fas fa-copy"></i>
-        </span>
-    `;
+				<span class="icon">
+					<i class="fas fa-copy"></i>
+				</span>
+			`;
 
 			copyBtn.onclick = () => {
 				navigator.clipboard.writeText(workingData.results[index].value ?? "");
 
 				const originalHTML = copyBtn.innerHTML;
 				copyBtn.innerHTML = `
-            <span class="icon">
-                <i class="fas fa-check"></i>
-            </span>
-        `;
+					<span class="icon">
+						<i class="fas fa-check"></i>
+					</span>
+				`;
 				copyBtn.classList.add("is-success");
 
 				setTimeout(() => {
@@ -440,8 +442,23 @@ function renderResults() {
 					copyBtn.classList.remove("is-success");
 				}, 1500);
 			};
+			btnGroup.appendChild(copyBtn);
 
-			header.appendChild(copyBtn);
+			const downloadBtn = document.createElement("button");
+			downloadBtn.classList.add("button", "is-medium", "is-ghost");
+			downloadBtn.innerHTML = `<span class="icon"><i class="fas fa-download"></i></span>`;
+			downloadBtn.onclick = () => {
+				const blob = new Blob([element.value ?? ""], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `${element.name || 'output'}.txt`;
+				a.click();
+				URL.revokeObjectURL(url);
+			};
+			btnGroup.appendChild(downloadBtn);
+
+			header.appendChild(btnGroup);
 			container.appendChild(header);
 
 			// container.appendChild(document.createElement("hr"));
