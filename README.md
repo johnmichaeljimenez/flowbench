@@ -1,93 +1,94 @@
-# Flowbench
+# Flowbench 🌊
 
-Flowbench is a lightweight LLM-powered workflow orchestration engine that defines complex AI-driven tasks as simple JSON graphs. Non-developers interact via intuitive auto-generated web forms for tasks like meal planning, resume generation, or news summarization; developers leverage CLI execution, extensible nodes, and integrations like Git, RSS, TTS, and image generation. Secure, local-only operation with API keys in .env. This README is self-generated using the meta/readme graph.
-
----
-
-## 🚀 Key Features
-
-*   **Self-Documenting:** This README is self-generated with the meta/readme graph, demonstrating self-improving documentation capabilities.
-*   **Dual Operation Modes:** CLI for scripting, automation, and cron jobs; Web UI with auto-generated forms for non-technical users.
-*   **Modular Architecture:** Node-based system for composing reusable workflows with references (`$id.property`) and parallel/async processing support.
-*   **Multi-LLM Support:** Grok, Gemini, OpenAI-compatible with tool calling (web/X search), structured output stripping, and cost/token reporting.
-*   **Rich Integrations:** File I/O (read/write batch/single), RSS fetching, Git status/commit inspection, text-to-speech (ElevenLabs), text-to-image (Grok Imagine).
-*   **Advanced Workflow:** Graph validation, caching for cycles/shared nodes, templates with `{{:datenow}}`, local notifications on completion.
-*   **Frontend Experience:** Monaco JSON editor, form persistence via localStorage, Markdown/CSV/TSV rendering, copy/download buttons.
-*   **Secure Design:** Localhost-only web server, no graph uploads, API keys exclusively from `.env` (gitignored).
+Flowbench is a lightweight LLM-powered workflow engine that orchestrates complex AI tasks via simple JSON graphs and auto-generated web forms. Non-developers can build chatbots, reports, meal plans, and automations through intuitive UIs without coding, while developers leverage CLI execution, modular nodes, and Git integration for powerful scripting.
 
 ---
 
-## 🛠 Getting Started
+## ✨ Key Features
 
-1.  **Clone the repository:** `git clone https://github.com/johnmichaeljimenez/flowbench && cd flowbench`
+*   **Self-Improving:** This README is self-generated using the meta/readme graph, showcasing Flowbench's self-improvement capabilities.
+*   **Dual Execution Modes:** CLI for automation/scripts/cron jobs and Web UI with auto-generated forms for non-technical users.
+*   **Modular Node System:** Composing reusable workflows with LLM calls, file I/O, RSS fetching, Git ops, TTS, and image generation.
+*   **Multi-LLM Support:** Grok, Gemini, LM Studio with real-time tools (web/X search) for current data.
+*   **Secure:** Local-only operation with API keys confined to `.env`; graphs are sharable without key exposure.
+*   **Robust Processing:** Built-in validation, caching (cycle-safe), templating, and notifications.
+*   **Rich Frontend:** Outputs as formatted cards (Markdown tables, audio previews) with copy/download actions.
+
+---
+
+## 🚀 Getting Started
+
+1.  **Clone the repo:** `git clone https://github.com/johnmichaeljimenez/flowbench && cd flowbench`
 2.  **Install dependencies:** `npm install`
-3.  **Configure API keys:** Create a `.env` file (gitignored):
-    *   `API_KEY_GROK=your_key`
-    *   `BASE_URL_GROK=https://api.x.ai/v1`
-    *   `API_KEY_GEMINI=your_key`
-    *   `BASE_URL_GEMINI=https://generativelanguage.googleapis.com/v1beta`
-4.  **CLI mode:** `node app.js graphs/meal-plan/index.json --ingredients.string "chicken rice onions"` (overrides form inputs; outputs JSON).
-5.  **Web UI mode:** `node index.js` (or `npm run dev` with nodemon), open `http://localhost:3000`, select graph from menu, fill form, submit for results.
-6.  **Editor mode:** Access `/editor.html` in web UI to create/edit JSON graphs with Monaco editor (new/open/save File API).
-7.  **Auto-discovery:** Graphs auto-discover from `graphs/` subfolders; outputs render as Markdown/tables/audio with copy/download.
+3.  **Set up .env:** Create a `.env` file with API keys (e.g., `API_KEY_GROK=yourkey`, `BASE_URL_GROK=https://api.x.ai/v1`).
+4.  **CLI mode:** `node app.js graphs/meal-plan/index.json --ingredients.string "chicken rice"` (override params with `--nodeId.input` value).
+5.  **Web UI mode:** `node index.js` (or `npm run dev`), open `http://localhost:3000`, select a graph from the menu, fill form, and submit.
+6.  **Editor:** Open `public/editor.html` for JSON graph creation/editing with Monaco (new/open/save support).
 
 ---
 
-## 📖 Usage
+## 🛠 Usage
 
-*   **Graph Structure:** JSON objects with `graph` (array of nodes), optional `form` (auto-generates UI inputs), `output` (result cards), `meta` (name/description/notifyOnEnd/disableConfirm), `entryPoints` (multiple start nodes).
-*   **Nodes:** `{id: 'unique', type: 'nodeType', input: {key: value|$ref.property}}`, refs via `$nodeId[.path]` for dependency resolution/caching.
-*   **Execution:** CLI starts at `out1` or specified node; resolves deps recursively with caching (cycle-safe), applies defaults/params/templates.
-*   **Custom Graphs:** Copy example, edit in Monaco (`/editor.html`), add to `graphs/mygraph/index.json`; forms map to node.input overrides (`id: 'nodeId.inputKey'`).
-*   **Dev Extensibility:** Add `nodes/*.js` with default handler + `nodeMetadata` {type, name, description, category, inputs {key: {type, required, supportsRef, default/description}}, outputs []}.
-*   **Validation:** Ensures node types exist, required inputs present, types match, refs valid; run before form gen/execution.
+*   **Graphs:** JSON files with a `graph` array of nodes. Reference outputs via `$nodeId` (or `$nodeId.property` for paths).
+*   **Resolution:** Node inputs support literals, `$refs`, arrays/objects; engine resolves dependencies, applies defaults/templates, validates schema/reqs, and caches results.
+*   **Building:** Use `constantString` for values, `templateString`/`joinString` for composition, `callLLM` for AI, and file nodes for I/O. Entry points are defined via the `entryPoints` array.
+*   **Forms:** Auto-generate from the `form` array (textfield/textarea/number/checkbox/dropdown/uploadText); outputs via `output.cards` with id refs and types (text/markdown/csv).
+*   **Testing:** Set `testMode:true` on `callLLM`; override params via CLI flags or form `storeLast` for persistence.
+*   **Editor:** `public/editor.html` loads `template.json`; validate via engine before running.
 
 ---
 
-## 📊 Example Graphs
+## 📋 Example Graphs
 
 | Name | Description | Key Features | Used For |
 | :--- | :--- | :--- | :--- |
-| **Flowbench README** | Self-improving README generator | Loads source code blob + JSON template, LLM processes into formatted Markdown | Auto-generating project documentation |
-| **Project Manager** | Evaluates project status and scope | Loads project desc/TODO/code blob, generates status report | Solo project management reviews |
-| **Resume Generator** | ATS-optimized resume builder | Multi-LLM chain: draft → market eval (tools) → polish | Competitor analysis & resumes |
-| **Meal Plan maker** | Personalized meal planning | Rich form, realtime prices/tools, Markdown report | Budget/dietary planning |
-| **Chatbot** | Stateful conversational AI | Persistent history/memory, dual LLM, tools enabled | Fact extraction & chat |
-| **Code Scaffold** | Coding project assistant | JSON scaffold upload or LLM gen, batch file write | Multi-file code projects |
-| **Idea Generator** | Ensemble reasoning for ideas | Dual LLM ideas + checker for coherent report | Refining raw notes |
-| **Quick Assistant** | Google Gemini 3.1 Flash | Simple single-prompt LLM | Fast Q&A |
-| **PH Latest news** | RSS news aggregator | Multi-RSS join + LLM summarize | Location-specific news |
-| **Flowbench Help** | Coding assistant | Code blob + query to LLM | Project-specific AI coding |
+| **Project Manager** | Evaluates project status and scope | Loads codebase/TODO/description, generates report | Solo project oversight |
+| **Flowbench README** | Self-improving README generator | Ingests code/blob/template, formats Markdown | Auto-generating repo docs |
+| **Resume Generator** | Evaluates credentials vs. market | Multi-LLM pipeline: draft → eval → polish | Job applications |
+| **Idea Generator** | Evaluates raw idea notes | Parallel ideas + combiner LLM | Refining scratch notes |
+| **Meal Plan maker** | Full meal plan creator | Form-heavy, real-time pricing/tools | Daily cooking plans |
+| **Code Scaffold** | Coding project assistant | JSON scaffold → LLM code gen → batch write | Bootstrap projects |
+| **PH Latest news** | RSS 2.0 aggregation | Multi-RSS fetch/join, location-aware | News briefs |
+| **Flowbench Help** | Coding assistant | Text blob ingestion for Q&A | Project self-help |
+| **Chatbot** | Persistent conversation | History/memory files, tools-enabled | Conversations |
+| **Chess SWAT** | Chess log to drama script | Chess log → analysis → dramatic script | Creative transformations |
+| **Quick Assistant** | Google Gemini 3.1 Flash | Simple Q&A with low temp | Fast queries |
 
 ---
 
 ## 🧩 Node List
 
-*   **Call LLM:** Sends prompts to Grok/LLMs.
-*   **Choose (Branch):** If/else logic based on boolean.
-*   **Constant String:** Fixed text value.
-*   **Execute Shell:** Runs shell commands (Disabled/Stubbed).
-*   **Fetch API:** HTTP GET requests.
-*   **Fetch RSS:** Parses RSS feeds to JSON.
-*   **Git List Files:** Extracts content from commits/staged files.
-*   **Join Strings:** Combines multiple string outputs.
-*   **Load Text Blob:** Recursively loads files into a blob.
-*   **Output Log:** Console/Frontend logging.
-*   **Read/Write Text File:** Single file I/O.
-*   **Template String:** Fills placeholders from sources.
-*   **Text to Image (Grok):** Generates images via Grok Imagine.
-*   **Text to Speech:** ElevenLabs integration.
-*   **Write Batch Text Files:** Saves multiple files from JSON.
+| Node | Parameters | Outputs | Used For |
+| :--- | :--- | :--- | :--- |
+| **Call LLM** | systemPrompt, userPrompt, maxTokens, temp, testMode, apiKey, baseURL, model, useTools | value, fullPrompt, modelUsed, tokensUsed | LLM API calls |
+| **Choose (Branch)** | condition, trueSource, falseSource | value, boolValue | If/else branching |
+| **Constant String** | string | value | Fixed text values |
+| **Execute Shell** | command, fireAndForget | value | Shell execution |
+| **Fetch API** | url, schema | value, code | HTTP GET requests |
+| **Fetch RSS** | url, fields | value | RSS parsing |
+| **Git List Files** | repoPath, commitHash | value | Extract from commit |
+| **Git List Staged** | repoPath | value | Review staged files |
+| **Join Strings** | sources, separator, fileSeparator | value | Combine strings |
+| **Load Text Blob** | path, whitelist, blacklist, maxFileSizeMB, etc. | value | Recursive file loading |
+| **Output Log** | source | value | Console/Frontend logs |
+| **Read Text File** | path, allowNonExistingFile | value | Read single file |
+| **Template String** | template, sources | value | Fill placeholders |
+| **Text to Image** | prompt, outputPath, aspectRatio, etc. | value, filePath, base64 | Grok Imagine generation |
+| **Text to Speech** | text, voiceId, apiKey, etc. | value, filePath, base64 | ElevenLabs TTS |
+| **Write Batch** | sources, path, encoding, forceWrite | value, writtenFiles | Save multiple files |
+| **Write Text File** | source, path, append, encoding, forceWrite | value, filePath | Save single file |
 
 ---
 
 ## 🗺 Roadmap
 
-*   [ ] Grok Imagine API video node
-*   [ ] Grok Imagine API image-to-image node
-*   [ ] Image upload form input as base64 string
+*   Grok Imagine API video node.
+*   Grok Imagine API image-to-image node.
+*   Image upload form input as base64 string.
+*   Add 'save as' button on text output cards.
 
 ---
 
 ## ⚖️ License
+
 Distributed under the MIT License. See LICENSE for more information.
