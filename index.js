@@ -32,7 +32,7 @@ function listAllGraphs() {
             const fullPath = path.join(currentDir, entry);
             const stat = statSync(fullPath);
 
-            if (stat.isDirectory()) {
+            if (entry !== ".temp" && stat.isDirectory()) {
                 const newBase = path.join(basePath, entry).replace(/\\/g, '/');
                 walk(fullPath, newBase);
             }
