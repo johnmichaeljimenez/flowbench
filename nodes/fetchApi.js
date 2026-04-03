@@ -3,23 +3,24 @@ import { resolveInput, applySchema } from "../nodeutils.js";
 export default async function fetchApi(node, options) {
 	const url = await resolveInput(node.input.url);
 	const schema = await resolveInput(node.input.schema ?? null);
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(`Failed to fetch from ${url}`);
-	}
+	const format = node.input.format ?? "json";
 
-	const jsonData = await response.json();
-	if (!schema) {
+	const response = await fetch(url);
+	if (!response.ok) throw new Error(`Failed to fetch from ${url}`);
+
+	const data = format === "text" ? await response.text() : await response.json();
+
+	if (!schema || format === "text") {
 		return {
-			value: JSON.stringify(jsonData),
+			value: typeof data === 'string' ? data : JSON.stringify(data),
 			code: response.status
-		}
+		};
 	}
 
 	return {
-		value: JSON.stringify(applySchema(jsonData, schema)),
+		value: JSON.stringify(applySchema(data, schema)),
 		code: response.status
-	}
+	};
 };
 
 export const nodeMetadata = {
