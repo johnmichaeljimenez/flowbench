@@ -29,9 +29,17 @@
         </nav>
 
         <div class="container">
-            <h1 class="title" id="graphName">Flowbench</h1>
-            <h2 class="subtitle py-4" id="graphDescription">Load a graph to start</h2>
+            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <h1 class="title" id="graphName">Flowbench</h1>
+                <button class="button is-small" id="advancedBtn" onclick="toggleAdvanced()">
+                    <span class="icon">
+                        <i class="fas fa-gear"></i>
+                    </span>
+                </button>
+            </div>
+            <h2 class="subtitle" id="graphDescription">Load a graph to start</h2>
             <hr>
+            
             <form id="graphForm" onsubmit="runGraph(event)"></form>
             <div id="responseOutput" class="px-4 py-4"></div>
         </div>

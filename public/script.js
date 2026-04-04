@@ -15,6 +15,8 @@ let running = false;
 
 let allGraphs = [];
 
+let isAdvancedOpen = false;
+
 async function loadGraphList() {
 	try {
 		const res = await fetch('/graphs/list');
@@ -104,6 +106,7 @@ async function loadSelectedGraph(graphName) {
 			}
 		});
 
+		showAdvancedInputs();
 	} catch (err) {
 		responseOutput.innerHTML = `<div class="notification is-danger">Error loading graph:<br>${err.message}</div>`;
 		localStorage.removeItem(keyLastUsedGraph);
@@ -559,6 +562,34 @@ async function runGraph(event) {
 		if (submitBtn) submitBtn.classList.remove("is-loading");
 		running = false;
 	}
+}
+
+function toggleAdvanced() {
+	const btn = document.getElementById("advancedBtn");
+	btn.classList.toggle("is-info");
+	isAdvancedOpen = !isAdvancedOpen;
+
+	showAdvancedInputs();
+}
+
+function showAdvancedInputs() {
+	const form = document.getElementById('graphForm');
+	const fields = form.querySelectorAll('.field.advanced');
+
+	fields.forEach(field => {
+		if (isAdvancedOpen)
+			field.classList.remove("is-hidden");
+		else
+			field.classList.add("is-hidden");
+
+		const inputs = field.querySelectorAll('input');
+		inputs.forEach(i => {
+			if (isAdvancedOpen)
+				field.classList.remove("is-success");
+			else
+				field.classList.add("is-success");
+		});
+	});
 }
 
 const lastUsed = localStorage.getItem(keyLastUsedGraph);

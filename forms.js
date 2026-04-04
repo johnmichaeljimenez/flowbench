@@ -215,7 +215,7 @@ export default function generateForm(formData) {
 		const func = typeMap[element.type];
 		if (func) {
 			const el = `
-			<div class="field">
+			<div class="field ${element.advanced ? "advanced" : ""}">
 				${func(element)}
 			</div>`;
 
