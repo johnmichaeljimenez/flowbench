@@ -4,7 +4,7 @@
 			"id": "sysPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "The date and time is: {{:datenow}}. You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is. When asked to draw an image, use pure SVG code."
+				"string": "The date and time is: {{:datenow}}. You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is. When asked to draw an image, charts, or graphs, use pure SVG code, enclose it directly as <svg>, without any Markdown code block."
 			}
 		},
 		{
@@ -15,12 +15,12 @@
 			}
 		},
 		{
-			"id": "llmChat",
+			"id": "llmChatGemini",
 			"type": "callLLM",
 			"input": {
 				"systemPrompt": "$sysPrompt",
 				"userPrompt": "$userInput",
-				"maxTokens": 1024,
+				"maxTokens": 4096,
 				"temperature": 0.3,
 				"apiKey": "API_KEY_GEMINI",
 				"baseURL": "BASE_URL_GEMINI",
@@ -28,10 +28,33 @@
 			}
 		},
 		{
+			"id": "llmChatGrok",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning",
+				"useTools": true
+			}
+		},
+		{
+			"id": "llmOutput",
+			"type": "choose",
+			"input": {
+				"condition": false,
+				"trueSource": "$llmChatGrok",
+				"falseSource": "$llmChatGemini"
+			}
+		},
+		{
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "$llmChat"
+				"source": "$llmOutput"
 			}
 		}
 	],
@@ -43,12 +66,31 @@
 			"type": "textarea",
 			"required": true,
 			"autoclear": true
+		},
+		{
+			"type": "dropdown",
+			"id": "llmOutput.condition",
+			"name": "Model Type",
+			"storeLast": true,
+			"data": [
+				{
+					"value": "true",
+					"display": "Grok 4.1 Reasoning + tools"
+				},
+				{
+					"value": "false",
+					"display": "Gemini 3.1 Flash"
+				}
+			],
+			"defaultValue": "true",
+			"required": true,
+			"advanced": true
 		}
 	],
 	"output": {
 		"cards": [
 			{
-				"id": "llmChat.value",
+				"id": "out1.value",
 				"type": "text",
 				"name": "Response",
 				"format": "markdown"
@@ -62,7 +104,7 @@
 	},
 	"meta": {
 		"name": "Quick Assistant",
-		"description": "Google Gemini 3.1 Flash (lite-preview)",
+		"description": "Google Gemini 3.1 Flash (lite-preview) and Grok 4.1 (reasoning + tools) with image and chart drawing via SVG (experimental).",
 		"disableConfirm": true,
 		"notifyOnEnd": true
 	}
