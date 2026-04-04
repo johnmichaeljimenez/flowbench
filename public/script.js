@@ -30,6 +30,41 @@ async function loadGraphList() {
 	}
 }
 
+function convertSvgCodeBlocksToSvg(container) {
+	const tempDiv = document.createElement('div');
+	tempDiv.innerHTML = container.innerHTML;
+
+	const codeBlocks = tempDiv.querySelectorAll('pre > code');
+
+	codeBlocks.forEach(codeEl => {
+		const langClass = Array.from(codeEl.classList)
+			.find(cls => cls.startsWith('language-'));
+		const lang = langClass ? langClass.replace(/^language-/, '').toLowerCase() : '';
+
+		const svgSource = codeEl.textContent.trim();
+
+		if (svgSource.toLowerCase().startsWith('<svg') &&
+			(lang === 'svg' || lang === 'xml' || lang === '')) {
+
+			const svgContainer = document.createElement('div');
+			svgContainer.innerHTML = svgSource;
+
+			const svgElement = svgContainer.querySelector('svg') || svgContainer.firstElementChild;
+
+			if (svgElement) {
+				svgElement.setAttribute('width', '100%');
+				svgElement.setAttribute('height', 'auto');
+				svgElement.style.maxWidth = '100%';
+
+				const pre = codeEl.parentElement;
+				if (pre) pre.replaceWith(svgElement);
+			}
+		}
+	});
+
+	container.innerHTML = tempDiv.innerHTML;
+}
+
 function renderGraphList(filter = '') {
 	const container = document.getElementById('graphList');
 	container.innerHTML = '';
@@ -262,16 +297,16 @@ const markedWithHighlight = new Marked(
 );
 
 markedWithHighlight.use({
-    renderer: {
-        link(href, title, text) {
-            return `<a href="${href}" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       ${title ? `title="${escapeHtml(title)}"` : ''}>
-                    ${text}
+	renderer: {
+		link(href, title, text) {
+			return `<a href="${href}" 
+                    	target="_blank" 
+						rel="noopener noreferrer"
+                    	${title ? `title="${escapeHtml(title)}"` : ''}>
+                    	${text}
                    </a>`;
-        }
-    }
+		}
+	}
 });
 
 function saveLastValues(form) {
@@ -483,6 +518,7 @@ function renderResults() {
 			const format = (element.format || '').toLowerCase();
 			if (format === "markdown") {
 				txt.innerHTML = markedWithHighlight.parse(element.value);
+				convertSvgCodeBlocksToSvg(txt);
 			} else if (format === "csv") {
 				txt.innerHTML = delimitedToHtmlTable(element.value, ',');
 			} else if (format === "tsv") {
