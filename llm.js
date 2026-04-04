@@ -153,6 +153,13 @@ export async function callLLm({
       console.log(`Output tokens: ${outputTokens}`);
       console.log(`Total tokens : ${totalTokens}`);
       console.log(`================================\n`);
+
+      const choice = completion.choices?.[0];
+      console.log("Finish reason:", choice?.finish_reason);
+      console.log("Raw content length:", choice?.message?.content?.length || 0);
+      if (choice?.finish_reason === "length") {
+        console.warn("OUTPUT WAS TRUNCATED BY MAX_TOKENS LIMIT");
+      }
     }
 
 
