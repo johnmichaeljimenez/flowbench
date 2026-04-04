@@ -118,7 +118,8 @@
 			"name": "News link 1 (RSS)",
 			"value": "https://www.manilatimes.net/news/feed/",
 			"required": true,
-			"storeLast": true
+			"storeLast": true,
+			"advanced": true
 		},
 		{
 			"type": "textfield",
@@ -126,7 +127,8 @@
 			"name": "News link 2 (RSS)",
 			"value": "https://www.philstar.com/rss/headlines",
 			"required": true,
-			"storeLast": true
+			"storeLast": true,
+			"advanced": true
 		},
 		{
 			"type": "textfield",
@@ -134,7 +136,8 @@
 			"name": "News link 3 (RSS)",
 			"value": "https://data.gmanetwork.com/gno/rss/weather/feed.xml",
 			"required": true,
-			"storeLast": true
+			"storeLast": true,
+			"advanced": true
 		}
 	],
 	"output": {
