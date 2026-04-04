@@ -4,7 +4,7 @@
 			"id": "sysPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "The date and time is: {{:datenow}}. You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is."
+				"string": "The date and time is: {{:datenow}}. You are a helpful assistant for quick, short-form questions and answers. If you are not sure about the answer, say 'I don't know', or provide alternative answers with confidence percentage how relevant it is. When asked to draw an image, use pure SVG code."
 			}
 		},
 		{
