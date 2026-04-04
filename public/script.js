@@ -519,6 +519,10 @@ function renderResults() {
 			if (format === "markdown") {
 				txt.innerHTML = markedWithHighlight.parse(element.value);
 				convertSvgCodeBlocksToSvg(txt);
+				txt.innerHTML = txt.innerHTML
+					.replace(/^```.*$/gm, '')
+					.replace(/```[\s\S]*?```/g, '');
+					
 			} else if (format === "csv") {
 				txt.innerHTML = delimitedToHtmlTable(element.value, ',');
 			} else if (format === "tsv") {
