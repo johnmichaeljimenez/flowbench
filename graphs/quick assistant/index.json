@@ -28,6 +28,19 @@
 			}
 		},
 		{
+			"id": "llmChatLMStudio",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": null,
+				"baseURL": "BASE_URL_LMSTUDIO",
+				"model": "<any>"
+			}
+		},
+		{
 			"id": "llmChatGrok",
 			"type": "callLLM",
 			"input": {
@@ -43,11 +56,15 @@
 		},
 		{
 			"id": "llmOutput",
-			"type": "choose",
+			"type": "select",
 			"input": {
-				"condition": false,
-				"trueSource": "$llmChatGrok",
-				"falseSource": "$llmChatGemini"
+				"key": "gemini",
+				"cases": {
+					"gemini": "$llmChatGemini",
+					"grok": "$llmChatGrok",
+					"lmstudio": "$llmChatLMStudio"
+				},
+				"defaultCase": "$llmChatGemini"
 			}
 		},
 		{
@@ -69,17 +86,21 @@
 		},
 		{
 			"type": "dropdown",
-			"id": "llmOutput.condition",
+			"id": "llmOutput.key",
 			"name": "Model Type",
 			"storeLast": true,
 			"data": [
 				{
-					"value": "true",
+					"value": "gemini",
+					"display": "Gemini 3.1 Flash"
+				},
+				{
+					"value": "grok",
 					"display": "Grok 4.1 Reasoning + tools"
 				},
 				{
-					"value": "false",
-					"display": "Gemini 3.1 Flash"
+					"value": "lmstudio",
+					"display": "LM Studio local server"
 				}
 			],
 			"defaultValue": "true",
@@ -104,7 +125,7 @@
 	},
 	"meta": {
 		"name": "Quick Assistant",
-		"description": "Google Gemini 3.1 Flash (lite-preview) and Grok 4.1 (reasoning + tools) with image and chart drawing via SVG (experimental).",
+		"description": "Google Gemini 3.1 Flash (lite-preview), Grok 4.1 (reasoning + tools), an LM Studio local server with image and chart drawing via SVG (experimental).",
 		"disableConfirm": true,
 		"notifyOnEnd": true
 	}
