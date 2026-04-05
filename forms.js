@@ -1,5 +1,6 @@
 function textfield(element) {
 	const defaultIfEmpty = element.defaultValue !== undefined ? element.defaultValue : '';
+    const placeholder = element.placeholder ? `placeholder="${element.placeholder}"` : '';
 
 	return `
 		<label class="label" for="${element.id}">
@@ -7,6 +8,7 @@ function textfield(element) {
 		</label>
 		<div class="control">
 			<input class="input" type="text" id="${element.id}" value="${element.value || ""}"
+			${placeholder}
 			${element.required ? "required" : ""}
 			${element.autoclear ? 'data-autoclear="true"' : ""}
 			${element.storeLast ? 'data-store-last="true"' : ""}
@@ -77,6 +79,7 @@ function textarea(element) {
 	const rows = element.lineCount || 3;
 	const value = element.value || "";
 	const defaultIfEmpty = element.defaultValue !== undefined ? element.defaultValue : '';
+    const placeholder = element.placeholder ? `placeholder="${element.placeholder}"` : '';
 
 	return `
     <label class="label" for="${element.id}">
@@ -87,6 +90,7 @@ function textarea(element) {
         class="textarea" 
         id="${element.id}" 
         rows="${rows}" 
+        ${placeholder}
         ${element.required ? "required" : ""}
         ${element.autoclear ? 'data-autoclear="true"' : ""}
 		${element.storeLast ? 'data-store-last="true"' : ""}
