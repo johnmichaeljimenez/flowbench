@@ -299,11 +299,11 @@ const markedWithHighlight = new Marked(
 markedWithHighlight.use({
 	renderer: {
 		link(href, title, text) {
-			return `<a href="${href}" 
+			return `<a href="${href.href}" 
                     	target="_blank" 
 						rel="noopener noreferrer"
-                    	${title ? `title="${escapeHtml(title)}"` : ''}>
-                    	${text}
+                    	${href.title ? `title="${escapeHtml(href.title)}"` : ''}>
+                    	${href.text}
                    </a>`;
 		}
 	}
