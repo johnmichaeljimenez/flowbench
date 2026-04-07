@@ -20,6 +20,10 @@
 			"input": {
 				"owner": "",
 				"repo": "",
+				"ref": "",
+				"path": "",
+				"whitelist": "",
+				"blacklist": "",
 				"githubToken": "PAT_GITHUB_DEFAULT"
 			}
 		},
@@ -107,7 +111,7 @@
 			"type": "textfield",
 			"id": "repo.owner",
 			"name": "Username",
-			"value": "",
+			"placeholder": "facebook",
 			"required": true,
 			"storeLast": true
 		},
@@ -115,7 +119,7 @@
 			"type": "textfield",
 			"id": "repo.repo",
 			"name": "Repository",
-			"value": "",
+			"placeholder": "react",
 			"required": true,
 			"storeLast": true
 		},
@@ -128,6 +132,43 @@
 			"storeLast": true,
 			"advanced": true,
 			"description": "PAT key name from .env file"
+		},
+		{
+			"type": "textfield",
+			"id": "repo.ref",
+			"name": "Ref",
+			"value": "main",
+			"required": true,
+			"storeLast": true,
+			"advanced": true,
+			"placeholder": "Branch, tag or commit SHA (default: main)"
+		},
+		{
+			"type": "textfield",
+			"id": "repo.path",
+			"name": "Path",
+			"value": "",
+			"required": false,
+			"storeLast": true,
+			"advanced": true
+		},
+		{
+			"type": "textfield",
+			"id": "repo.whitelist",
+			"name": "Whitelist (Semicolon-delimited)",
+			"placeholder": ".js;.ts;.md;.py;.json",
+			"required": false,
+			"storeLast": true,
+			"advanced": true
+		},
+		{
+			"type": "textfield",
+			"id": "repo.blacklist",
+			"name": "Blacklist (Semicolon-delimited)",
+			"placeholder": ".exe;.dll;.pdb",
+			"required": false,
+			"storeLast": true,
+			"advanced": true
 		},
 		{
 			"type": "dropdown",
@@ -165,7 +206,7 @@
 	},
 	"meta": {
 		"name": "GitHub code help",
-		"description": "Lightweight coding assistant for public Github repositories. Use custom PAT for more permissive rate limits. (60 per hour - default).",
+		"description": "Lightweight coding assistant for public Github repositories. Use custom PAT for more permissive rate limits. (60 requests per hour default for non-PAT).",
 		"disableConfirm": true,
 		"notifyOnEnd": true
 	}
