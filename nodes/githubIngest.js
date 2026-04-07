@@ -5,7 +5,8 @@ const defaultBlacklist = [
 	'node_modules', '.git', '.svn', '.hg', '__pycache__',
 	'.venv', 'env', '.env', '.DS_Store', 'Thumbs.db',
 	'.nyc_output', 'coverage', '.cache', 'dist', 'build',
-	'package-lock.json', 'yarn.lock', 'reports', '.temp'
+	'package-lock.json', 'yarn.lock', 'reports', '.temp',
+	'LICENSE.txt' //not needed anyway
 ];
 
 function calculateDepth(itemPath) {
@@ -40,7 +41,7 @@ export default async function githubIngest(node, options) {
 	const treeResponse = await fetch(treeUrl, { headers });
 	if (!treeResponse.ok) {
 		const errorText = await treeResponse.text();
-		throw new Error(`GitHub API error (${treeResponse.status}): ${errorText}`);
+		throw new Error(`GitHub API error for '${treeUrl}' (${treeResponse.status}): ${errorText}`);
 	}
 	const treeData = await treeResponse.json();
 
@@ -112,7 +113,7 @@ export default async function githubIngest(node, options) {
 			loadedCount++;
 			loadedSize += item.size || content.length;
 
-			if (loadedCount % 20 === 0) {
+			if (loadedCount % 20 === 0) { //politeness
 				await new Promise(r => setTimeout(r, 50));
 			}
 		} catch (err) {
