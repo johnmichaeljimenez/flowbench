@@ -1,0 +1,172 @@
+{
+	"graph": [
+		{
+			"id": "sysPrompt",
+			"type": "constantString",
+			"input": {
+				"string": "You are a code assistant for a repository. The date and time is: {{:datenow}}. Answer the user's question concisely and in neutral, helpful tone."
+			}
+		},
+		{
+			"id": "userPrompt",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "repo",
+			"type": "githubIngest",
+			"input": {
+				"owner": "",
+				"repo": "",
+				"githubToken": "PAT_GITHUB_DEFAULT"
+			}
+		},
+		{
+			"id": "userInput",
+			"type": "templateString",
+			"input": {
+				"template": "{0}\n\n[Source Code]\n{1}",
+				"sources": [
+					"$userPrompt",
+					"$repo"
+				]
+			}
+		},
+		{
+			"id": "llmChatGemini",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "llmChatLMStudio",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": null,
+				"baseURL": "BASE_URL_LMSTUDIO",
+				"model": "<any>"
+			}
+		},
+		{
+			"id": "llmChatGrok",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "llmOutput",
+			"type": "select",
+			"input": {
+				"key": "gemini",
+				"cases": {
+					"gemini": "$llmChatGemini",
+					"grok": "$llmChatGrok",
+					"lmstudio": "$llmChatLMStudio"
+				},
+				"defaultCase": "$llmChatGemini"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$llmOutput"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userPrompt.string",
+			"name": "Enter inquiry",
+			"value": null,
+			"type": "textarea",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "repo.owner",
+			"name": "Username",
+			"value": "",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "repo.repo",
+			"name": "Repository",
+			"value": "",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "textfield",
+			"id": "repo.githubToken",
+			"name": "Token Name",
+			"value": "PAT_GITHUB_DEFAULT",
+			"required": true,
+			"storeLast": true,
+			"advanced": true,
+			"description": "PAT key name from .env file"
+		},
+		{
+			"type": "dropdown",
+			"id": "llmOutput.key",
+			"name": "Model Type",
+			"storeLast": true,
+			"data": [
+				{
+					"value": "gemini",
+					"display": "Gemini 3.1 Flash"
+				},
+				{
+					"value": "grok",
+					"display": "Grok 4.1 Reasoning"
+				},
+				{
+					"value": "lmstudio",
+					"display": "LM Studio local server"
+				}
+			],
+			"defaultValue": "true",
+			"required": true,
+			"advanced": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Result",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "GitHub code help",
+		"description": "Lightweight coding assistant for public Github repositories. Use custom PAT for more permissive rate limits. (60 per hour - default).",
+		"disableConfirm": true,
+		"notifyOnEnd": true
+	}
+}
