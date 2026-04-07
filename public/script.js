@@ -554,6 +554,37 @@ function renderResults() {
 			};
 
 			responseOutput.appendChild(downloadBtn);
+		} else if (element.type === "downloadPDF") {
+			const container = document.createElement("div");
+			container.classList.add("box", "is-flex", "is-align-items-center", "is-justify-content-space-between");
+
+			const label = document.createElement("span");
+			label.innerHTML = `<i class="fas fa-file-pdf mr-2"></i> <strong>${element.name ?? "Download PDF"}</strong>`;
+
+			const downloadBtn = document.createElement("button");
+			downloadBtn.classList.add("button", "is-primary");
+			downloadBtn.innerHTML = `<span class="icon"><i class="fas fa-download"></i></span><span>Download</span>`;
+
+			downloadBtn.onclick = () => {
+				const byteCharacters = atob(element.value);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = element.filename ?? "document.pdf";
+				a.click();
+				URL.revokeObjectURL(url);
+			};
+
+			container.appendChild(label);
+			container.appendChild(downloadBtn);
+			responseOutput.appendChild(container);
 		} else if (element.type === "audio") {
 			const container = document.createElement("div");
 			container.style.margin = "15px 0";
