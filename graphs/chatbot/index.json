@@ -154,7 +154,26 @@
       "type": "textarea",
       "required": true,
       "autoclear": true
-    }
+    },
+		{
+			"type": "dropdown",
+			"id": "llmChat.useTools",
+			"name": "Use Realtime Search",
+			"data": [
+				{
+					"value": "true",
+					"display": "Yes"
+				},
+				{
+					"value": "false",
+					"display": "No"
+				}
+			],
+			"defaultValue": "true",
+			"required": true,
+      "advanced": true,
+      "storeLast": true
+		}
   ],
   "output": {
     "cards": [
