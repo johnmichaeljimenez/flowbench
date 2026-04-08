@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from "dotenv";
 import path from "node:path";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { processGraph, extractFromPath, validateGraph } from "./engine.js";
+import { processGraph, extractFromPath, validateGraph, generateMermaidViz } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 import generateForm from './forms.js';
 
@@ -96,6 +96,35 @@ app.get('/graphs/list', (req, res) => {
     }
 });
 
+app.get('/graphs/viz', (req, res) => {
+    try {
+        const { graphData, graphName } = req.query;
+
+        if (graphName) {
+            const { graphData: loadedGraph } = loadGraphByName(graphName);
+            const mermaidCode = generateMermaidViz(loadedGraph);
+            return res.send(mermaidCode);
+        }
+
+        if (!graphData) {
+            return res.status(400).json({ error: 'Missing "graphData" or "graphName" in query parameters' });
+        }
+
+        const parsedGraphData = typeof graphData === 'string' ? JSON.parse(graphData) : graphData;
+        const mermaidCode = generateMermaidViz(parsedGraphData);
+
+        if (!mermaidCode) {
+            return res.status(400).json({ error: 'Failed to generate Mermaid code - invalid graph structure' });
+        }
+
+        res.send(mermaidCode);
+
+    } catch (error) {
+        console.error('Error generating Mermaid viz:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/graphs', async (req, res) => {
     const { graphName, startNode = "out1", params = {} } = req.body;
 
@@ -113,7 +142,7 @@ app.post('/graphs', async (req, res) => {
         const result = await processGraph(graphData, startNode, false, params);
         const output = graphData.output;
         const outputParams = output.cards ?? [];
-        
+
         let filteredOutput = [];
 
         if (outputParams.length > 0) {
