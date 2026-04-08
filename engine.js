@@ -82,6 +82,41 @@ export function validateGraph(graphData) {
     return true;
 }
 
+export function generateMermaidViz(graphData) {
+    if (!validateGraph(graphData)) {
+        return;
+    }
+
+    const nodes = graphData.graph || [];
+    let mermaid = 'flowchart TD\n';
+
+    const nodeMap = new Map();
+    const edges = new Set();
+
+    nodes.forEach(node => {
+        const label = `${node.id}\\n(${node.type})`;
+        nodeMap.set(node.id, label);
+        mermaid += `    ${node.id}["${label}"]\n`;
+
+        function findRefs(obj) {
+            if (typeof obj === 'string' && obj.startsWith('$')) {
+                const refId = obj.slice(1).split('.')[0];
+                if (nodeMap.has(refId)) {
+                    edges.add(`${refId} --> ${node.id}`);
+                }
+            } else if (obj && typeof obj === 'object') {
+                Object.values(obj).forEach(findRefs);
+            }
+        }
+        findRefs(node.input);
+    });
+
+    edges.forEach(edge => mermaid += `    ${edge}\n`);
+
+    console.log(mermaid);
+    return mermaid;
+}
+
 function applySchema(data, schema) {
     let result = {};
 
