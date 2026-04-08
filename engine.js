@@ -88,7 +88,8 @@ export function generateMermaidViz(graphData) {
     }
 
     const nodes = graphData.graph || [];
-    let mermaid = 'flowchart TD\n';
+    let mermaid = `%%{init: {"theme": "base", "themeVariables": {"lineColor": "#9ca3af"}}}%%
+flowchart TD\n`;
 
     const nodeMap = new Map();
     const edges = new Set();
