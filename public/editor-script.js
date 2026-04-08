@@ -7,6 +7,12 @@ window.MonacoEnvironment = {
 	}
 };
 
+let currentPanZoomInstance = null;
+mermaid.initialize({
+	startOnLoad: true,
+	theme: 'default'
+});
+
 require.config({
 	paths: {
 		vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs'
@@ -80,12 +86,67 @@ async function fileSave(saveAs) {
 		const writable = await fileHandle.createWritable();
 		await writable.write(savedString);
 		await writable.close();
-		
+
 		fileNameHeader.innerText = fileHandle.name;
 	} catch (error) {
 		console.error("File save error:", error);
 	}
 };
+
+function updatePreview(code) {
+	const params = new URLSearchParams({ graphData: code });
+
+	//TODO: better error handling
+	fetch(`/graphs/viz?${params.toString()}`)
+		.then(response => {
+			if (!response.ok) throw new Error('JSON graph error');
+			return response.text();
+		})
+		.then(m => {
+			const graphElement = document.getElementById('graph');
+
+			graphElement.innerHTML = '';
+			if (currentPanZoomInstance) {
+				currentPanZoomInstance.destroy();
+				currentPanZoomInstance = null;
+			}
+
+			graphElement.textContent = m;
+			graphElement.removeAttribute('data-processed');
+
+			mermaid.init(undefined, '#graph').then(() => {
+				const svg = graphElement.querySelector('svg');
+				if (svg) {
+					svg.removeAttribute('width');
+					svg.removeAttribute('height');
+
+					svg.style.width = '100%';
+					svg.style.height = '100%';
+					svg.style.maxWidth = '100%';
+					svg.style.maxHeight = '100%';
+
+					svg.setAttribute('width', '100%');
+					svg.setAttribute('height', '100%');
+					svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+					currentPanZoomInstance = svgPanZoom(svg, {
+						zoomEnabled: true,
+						controlIconsEnabled: false,
+						fit: true,
+						center: true,
+						minZoom: 0.3,
+						maxZoom: 20,
+						zoomScaleSensitivity: 0.2,
+						dblClickZoomEnabled: true,
+						preventMouseEventsDefault: true
+					});
+				}
+			});
+		})
+		.catch(err => {
+			console.error(err);
+		});
+}
 
 require(['vs/editor/editor.main'], function () {
 	const editor = monaco.editor.create(document.getElementById('editor'), {
@@ -134,7 +195,7 @@ require(['vs/editor/editor.main'], function () {
 
 	const handleEditorChange = debounce(() => {
 		const currentCode = editor.getValue();
-		console.log('Debounced change detected!');
+		updatePreview(currentCode);
 	}, 300);
 
 	// Attach the debounced listener

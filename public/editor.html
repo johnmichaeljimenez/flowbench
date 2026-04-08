@@ -7,6 +7,9 @@
 
 	<title>Flowbench | Editor</title>
 
+	<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
 
@@ -38,7 +41,7 @@
 		}
 
 		.monaco-part {
-			flex: 4;
+			flex: 1.5;
 			min-width: 0;
 			display: flex;
 			flex-direction: column;
@@ -122,9 +125,7 @@
 						<header class="px-4 py-3 has-background-grey-dark has-text-white">
 							<strong>Graph</strong>
 						</header>
-						<div class="px-4 py-4">
-							GRAPH VISUALIZATION HERE AND ERRORS FROM validate() backend call every debounce
-						</div>
+						<div class="mermaid" id="graph" style="flex: 1; padding: 0; overflow: hidden;"></div>
 					</div>
 				</div>
 
