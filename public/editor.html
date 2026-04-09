@@ -37,21 +37,37 @@
 		.split-container {
 			display: flex;
 			height: 100%;
-			gap: 1rem;
+			width: 100%;
+			gap: 0;
 		}
 
 		.monaco-part {
-			flex: 1.5;
-			min-width: 0;
+			flex: 1 1 60%;
+			/* initial width 60% */
+			min-width: 200px;
 			display: flex;
 			flex-direction: column;
 		}
 
 		.panel-part {
-			flex: 1;
-			min-width: 0;
+			flex: 1 1 40%;
+			/* initial width 40% */
+			min-width: 200px;
 			display: flex;
 			flex-direction: column;
+		}
+
+		.resize-handle {
+			width: 2px;
+			background-color: #4a4a4a;
+			cursor: col-resize;
+			transition: background-color 0.2s;
+			flex-shrink: 0;
+		}
+
+		.resize-handle:hover,
+		.resize-handle:active {
+			background-color: #00d1b2;
 		}
 
 		#editor {
@@ -113,14 +129,15 @@
 	<div class="main-content">
 		<div class="editor-wrapper">
 			<div class="split-container">
-
-				<div class="monaco-part">
+				<div class="monaco-part" id="editor-pane">
 					<div class="box p-0" style="flex: 1; overflow: hidden;">
 						<div id="editor"></div>
 					</div>
 				</div>
 
-				<div class="panel-part">
+				<div id="resize-handle" class="resize-handle"></div>
+
+				<div class="panel-part" id="graph-pane">
 					<div class="box error-panel p-0">
 						<header class="px-4 py-3 has-background-grey-dark has-text-white">
 							<strong>Graph</strong>
@@ -128,7 +145,6 @@
 						<div class="mermaid" id="graph" style="flex: 1; padding: 0; overflow: hidden;"></div>
 					</div>
 				</div>
-
 			</div>
 		</div>
 	</div>

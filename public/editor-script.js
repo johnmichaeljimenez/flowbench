@@ -198,7 +198,70 @@ require(['vs/editor/editor.main'], function () {
 		updatePreview(currentCode);
 	}, 300);
 
-	// Attach the debounced listener
 	editor.onDidChangeModelContent(handleEditorChange);
 	window.monacoEditor = editor;
 });
+
+(function initSplitResize() {
+	const container = document.querySelector('.split-container');
+	const leftPane = document.getElementById('editor-pane');
+	const rightPane = document.getElementById('graph-pane');
+	const handle = document.getElementById('resize-handle');
+
+	if (!leftPane || !rightPane || !handle) return;
+
+	let startX = 0;
+	let startLeftWidth = 0;
+
+	function onMouseMove(e) {
+		const containerRect = container.getBoundingClientRect();
+		const deltaX = e.clientX - startX;
+		const newLeftWidthPercent = (startLeftWidth + deltaX) / containerRect.width * 100;
+
+		const clamped = Math.min(80, Math.max(20, newLeftWidthPercent));
+		leftPane.style.flex = `1 1 ${clamped}%`;
+		rightPane.style.flex = `1 1 ${100 - clamped}%`;
+
+		if (window.monacoEditor) {
+			window.monacoEditor.layout();
+		}
+
+		if (currentPanZoomInstance && typeof currentPanZoomInstance.resize === 'function') {
+			currentPanZoomInstance.resize();
+			currentPanZoomInstance.fit();
+			currentPanZoomInstance.center();
+		}
+	}
+
+	function onMouseUp() {
+		document.removeEventListener('mousemove', onMouseMove);
+		document.removeEventListener('mouseup', onMouseUp);
+		document.body.style.cursor = '';
+		document.body.style.userSelect = '';
+	}
+
+	function onMouseDown(e) {
+		startX = e.clientX;
+		startLeftWidth = leftPane.getBoundingClientRect().width;
+		document.body.style.cursor = 'col-resize';
+		document.body.style.userSelect = 'none';
+		document.addEventListener('mousemove', onMouseMove);
+		document.addEventListener('mouseup', onMouseUp);
+		e.preventDefault();
+	}
+
+	handle.addEventListener('mousedown', onMouseDown);
+
+	let resizeTimeout;
+	window.addEventListener('resize', () => {
+		if (resizeTimeout) clearTimeout(resizeTimeout);
+		resizeTimeout = setTimeout(() => {
+			if (window.monacoEditor) window.monacoEditor.layout();
+			if (currentPanZoomInstance && typeof currentPanZoomInstance.resize === 'function') {
+				currentPanZoomInstance.resize();
+				currentPanZoomInstance.fit();
+				currentPanZoomInstance.center();
+			}
+		}, 100);
+	});
+})();
