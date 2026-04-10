@@ -21,6 +21,10 @@ export const nodeMetadata = {
     name: "Select",
     description: "Multi-branch selector: picks an input based on a matching key",
     category: "Core",
+    mermaid: {
+        shape: "diamond",
+        className: "decision"
+    },
     inputs: {
         key: {
             type: "string",

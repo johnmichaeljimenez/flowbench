@@ -19,6 +19,10 @@ export const nodeMetadata = {
     name: "Choose (Branch)",
     description: "Simple if/else: picks between two inputs based on a boolean value",
     category: "Core",
+    mermaid: {
+        shape: "diamond",
+        className: "decision"
+    },
     inputs: {
         condition: { 
             type: "boolean", 
