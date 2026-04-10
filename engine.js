@@ -93,11 +93,37 @@ flowchart TD\n`;
 
     const nodeMap = new Map();
     const edges = new Set();
+    const classAssignments = new Map();
 
     nodes.forEach(node => {
-        const label = `${node.id}\\n(${node.type})`;
+        const meta = nodeRegistry[node.type];
+        const mermaidConfig = meta?.mermaid || { shape: "rectangle" };
+
+        const label = `${node.id}<br>(${node.type})`;
+
+        let nodeDef;
+        switch (mermaidConfig.shape) {
+            case "diamond":
+                nodeDef = `${node.id}{"${label}"}`;
+                break;
+            case "stadium":
+                nodeDef = `${node.id}([${label}])`;
+                break;
+            case "circle":
+                nodeDef = `${node.id}(( ${label} ))`;
+                break;
+            case "rounded":
+                nodeDef = `${node.id}(${label})`;
+                break;
+            case "hexagon":
+                nodeDef = `${node.id}{{ ${label} }}`;
+                break;
+            default:
+                nodeDef = `${node.id}["${label}"]`;
+        }
+
+        mermaid += `    ${nodeDef}\n`;
         nodeMap.set(node.id, label);
-        mermaid += `    ${node.id}["${label}"]\n`;
 
         function findRefs(obj) {
             if (typeof obj === 'string' && obj.startsWith('$')) {
@@ -110,9 +136,23 @@ flowchart TD\n`;
             }
         }
         findRefs(node.input);
+
+        if (mermaidConfig.className) {
+            if (!classAssignments.has(mermaidConfig.className)) {
+                classAssignments.set(mermaidConfig.className, []);
+            }
+            classAssignments.get(mermaidConfig.className).push(node.id);
+        }
     });
 
     edges.forEach(edge => mermaid += `    ${edge}\n`);
+
+    mermaid += `    classDef decision fill:#fefce8,stroke:#854d0e,stroke-width:3px;\n`;
+    mermaid += `    classDef file-writer fill:#ecfdf5,stroke:#10b981,stroke-width:3px;\n`;
+
+    classAssignments.forEach((nodeIds, className) => {
+        mermaid += `    class ${nodeIds.join(',')} ${className};\n`;
+    });
 
     console.log(mermaid);
     return mermaid;
