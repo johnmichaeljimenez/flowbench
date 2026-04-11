@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { fileURLToPath } from 'node:url';
 import nodeNotifier from "node-notifier";
+import { randomUUID } from 'node:crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -230,11 +231,10 @@ function applyInputDefaults(nodes) {
 
 function createContext(localMode = false, customContext = {}) {
     const now = new Date();
-    let sessionId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
-        `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
 
-    const datenow = sessionId;
-    sessionId = `${sessionId}_${String(now.getMilliseconds()).padStart(3, "0")}`;
+    const datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+        `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
+    const sessionId = randomUUID?.() || datenow;
 
     const baseDir = customContext.baseDir || path.join(process.cwd(), "sessions", sessionId);
     console.log(`New session: ${sessionId} at ${baseDir}`);
@@ -339,6 +339,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
         if (typeof str !== "string") return str;
         return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
             if (key === 'datenow') return context.datenow;
+            if (key === 'sessionId') return context.sessionId;
             return `{{:${key}}}`;
         });
     }
