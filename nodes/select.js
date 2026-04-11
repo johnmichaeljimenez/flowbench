@@ -1,14 +1,14 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 
-export default async function select(node, options) {
-    const key = await resolveInput(node.input.key);
+export default async function select(node, context) {
+    const key = await resolveInput(node.input.key, context);
     const cases = node.input.cases || {};
 
     const targetRef = Object.prototype.hasOwnProperty.call(cases, key)
-        ? await resolveInput(cases[key])
-        : await resolveInput(node.input.defaultSource);
+        ? await resolveInput(cases[key], context)
+        : await resolveInput(node.input.defaultSource, context);
 
-    const chosen = await resolveInput(targetRef);
+    const chosen = await resolveInput(targetRef, context);
 
     return {
         value: chosen,

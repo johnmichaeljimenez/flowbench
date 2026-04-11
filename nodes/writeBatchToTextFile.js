@@ -1,14 +1,14 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-export default async function writeBatchToTextFile(node, options) {
+export default async function writeBatchToTextFile(node, context) {
 	const forceWrite = node.input.forceWrite === true;
 	const basePath = node.input.path
-		? await resolveInput(node.input.path)
+		? await resolveInput(node.input.path, context)
 		: ".temp";
 
-	const rawInput = await resolveInput(node.input.sources);
+	const rawInput = await resolveInput(node.input.sources, context);
 
 	let batchData;
 	try {
@@ -19,7 +19,7 @@ export default async function writeBatchToTextFile(node, options) {
 
 	const writtenFiles = [];
 
-	if (options.localMode || forceWrite) {
+	if (context.localMode || forceWrite) {
 		for (const [relativePath, content] of Object.entries(batchData)) {
 
 			const filePath = basePath

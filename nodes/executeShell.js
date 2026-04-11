@@ -1,10 +1,10 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 
-export default async function executeShell(node, options) {
+export default async function executeShell(node, context) {
 	return {value: ""} //disabled for now (unused anyway)
 	
-	const command = await resolveInput(node.input.command);
-	const fireAndForget = await resolveInput(node.input.fireAndForget) ?? false;
+	const command = await resolveInput(node.input.command, context);
+	const fireAndForget = await resolveInput(node.input.fireAndForget, context) ?? false;
 
 	const { spawn } = await import('node:child_process');
 

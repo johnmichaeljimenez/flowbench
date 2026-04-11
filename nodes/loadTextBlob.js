@@ -1,4 +1,4 @@
-import { resolveInput, resolveStringList } from "../nodeutils.js";
+import { resolveInput, resolveFilePath, resolveStringList } from "../nodeutils.js";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -9,14 +9,14 @@ const defaultBlacklist = [
 	'package-lock.json', 'yarn.lock', 'reports', '.temp'
 ];
 
-export default async function loadTextBlob(node, options) {
-	const basePath = await resolveInput(node.input.path);
-	const maxFileSizeMB = await resolveInput(node.input.maxFileSizeMB ?? 1);
-	const maxTotalSizeMB = await resolveInput(node.input.maxTotalSizeMB ?? 1);
-	const maxDepth = await resolveInput(node.input.maxDepth ?? 10);
+export default async function loadTextBlob(node, context) {
+	const basePath = await resolveFilePath(node.input.path, context);
+	const maxFileSizeMB = await resolveInput(node.input.maxFileSizeMB ?? 1, context);
+	const maxTotalSizeMB = await resolveInput(node.input.maxTotalSizeMB ?? 1, context);
+	const maxDepth = await resolveInput(node.input.maxDepth ?? 10, context);
 
-	const whitelist = await resolveStringList(node.input.whitelist);
-	const userBlacklist = await resolveStringList(node.input.blacklist);
+	const whitelist = await resolveStringList(node.input.whitelist, ';', [], context);
+	const userBlacklist = await resolveStringList(node.input.blacklist, ';', [], context);
 	const blacklist = [...new Set([...defaultBlacklist, ...userBlacklist])];
 
 	let files = [];
@@ -89,8 +89,8 @@ export const nodeMetadata = {
 		whitelist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names  separated by semicolon e.g. .js;.json;.md" },
 		blacklist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names separated by semicolon e.g. .js;.json;.md" },
 		maxFileSizeMB: { type: "number", required: false, default: 1, description: "Skip individual files larger than this" },
-        maxTotalSizeMB: { type: "number", required: false, default: 1, description: "Stop loading once total size reached" },
-        maxDepth: { type: "number", required: false, default: 10, description: "Max folder recursion depth" }
+		maxTotalSizeMB: { type: "number", required: false, default: 1, description: "Stop loading once total size reached" },
+		maxDepth: { type: "number", required: false, default: 10, description: "Max folder recursion depth" }
 	},
 	outputs: ["value"]
 };

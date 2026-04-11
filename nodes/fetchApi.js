@@ -1,8 +1,8 @@
 import { resolveInput, applySchema } from "../nodeutils.js";
 
-export default async function fetchApi(node, options) {
-	const url = await resolveInput(node.input.url);
-	const schema = await resolveInput(node.input.schema ?? null);
+export default async function fetchApi(node, context) {
+	const url = await resolveInput(node.input.url, context);
+	const schema = await resolveInput(node.input.schema ?? null, context);
 	const format = node.input.format ?? "json";
 
 	const response = await fetch(url);

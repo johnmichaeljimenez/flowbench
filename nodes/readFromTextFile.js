@@ -1,8 +1,8 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { readFileSync, existsSync } from "node:fs";
 
-export default async function readFromTextFile(node, options) {
-	const filePath = await resolveInput(node.input.path);
+export default async function readFromTextFile(node, context) {
+	const filePath = await resolveFilePath(node.input.path, context);
 	const fileExists = existsSync(filePath);
 
 	const allowNonExistingFile = node.input.allowNonExistingFile !== false;

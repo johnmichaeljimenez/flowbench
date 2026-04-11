@@ -1,10 +1,10 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import simpleGit from 'simple-git';
 
-export default async function gitListStagedFiles(node, options) {
-	const repoPath = await resolveInput(node.input.repoPath);
+export default async function gitListStagedFiles(node, context) {
+	const repoPath = await resolveInput(node.input.repoPath, context);
 
 	if (!existsSync(repoPath)) {
 		throw new Error(`Git repository path not found: ${repoPath}`);

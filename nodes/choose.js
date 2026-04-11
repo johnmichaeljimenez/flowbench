@@ -1,12 +1,12 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 
-export default async function choose(node, options) {
-    const condition = await resolveInput(node.input.condition ?? false);
+export default async function choose(node, context) {
+    const condition = await resolveInput(node.input.condition ?? false, context);
     const branchRef = Boolean(condition) 
         ? node.input.trueSource 
         : node.input.falseSource;
 
-    const chosen = await resolveInput(branchRef);
+    const chosen = await resolveInput(branchRef, context);
 
     return {
         value: chosen,

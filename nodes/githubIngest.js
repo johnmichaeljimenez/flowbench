@@ -13,16 +13,16 @@ function calculateDepth(itemPath) {
 	return (itemPath.match(/\//g) || []).length;
 }
 
-export default async function githubIngest(node, options) {
-	const owner = await resolveInput(node.input.owner);
-	const repo = await resolveInput(node.input.repo);
-	const ref = await resolveInput(node.input.ref ?? 'main');
-	const subPath = await resolveInput(node.input.path ?? '');
-	const maxFileSizeMB = await resolveInput(node.input.maxFileSizeMB ?? 1);
-	const maxTotalSizeMB = await resolveInput(node.input.maxTotalSizeMB ?? 5);
-	const maxDepth = await resolveInput(node.input.maxDepth ?? 10);
+export default async function githubIngest(node, context) {
+	const owner = await resolveInput(node.input.owner, context);
+	const repo = await resolveInput(node.input.repo, context);
+	const ref = await resolveInput(node.input.ref ?? 'main', context);
+	const subPath = await resolveInput(node.input.path ?? '', context);
+	const maxFileSizeMB = await resolveInput(node.input.maxFileSizeMB ?? 1, context);
+	const maxTotalSizeMB = await resolveInput(node.input.maxTotalSizeMB ?? 5, context);
+	const maxDepth = await resolveInput(node.input.maxDepth ?? 10, context);
 
-	let githubToken = await resolveInput(node.input.githubToken ?? '');
+	let githubToken = await resolveInput(node.input.githubToken ?? '', context);
 	if (githubToken)
 		githubToken = process.env[githubToken];
 

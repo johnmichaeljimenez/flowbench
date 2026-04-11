@@ -1,11 +1,11 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import simpleGit from 'simple-git';
 
-export default async function gitListFilesFromCommit(node, options) {
-	const repoPath = await resolveInput(node.input.repoPath);
-	const commitHash = await resolveInput(node.input.commitHash);
+export default async function gitListFilesFromCommit(node, context) {
+	const repoPath = await resolveInput(node.input.repoPath, context);
+	const commitHash = await resolveInput(node.input.commitHash, context);
 
 	if (!existsSync(repoPath)) {
 		throw new Error(`Git repository path not found: ${repoPath}`);

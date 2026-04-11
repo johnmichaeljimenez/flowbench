@@ -1,13 +1,13 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-export default async function tts(node, options) {
-	const text = await resolveInput(node.input.text);
-	const voiceId = await resolveInput(node.input.voiceId);
+export default async function tts(node, context) {
+	const text = await resolveInput(node.input.text, context);
+	const voiceId = await resolveInput(node.input.voiceId, context);
 	const apiKeyEnv = node.input.apiKey ?? "ELEVENLABS_API_KEY";
-	const outputPath = await resolveInput(node.input.outputPath);
-	const forceWrite = await resolveInput(node.input.forceWrite) === true;
+	const outputPath = await resolveFilePath(node.input.outputPath, context);
+	const forceWrite = await resolveInput(node.input.forceWrite, context) === true;
 
 	if (!text?.trim()) {
 		throw new Error("No text provided for TTS");
@@ -56,7 +56,7 @@ export default async function tts(node, options) {
 	const audioBuffer = Buffer.from(arrayBuffer);
 	const base64Audio = audioBuffer.toString("base64");
 
-	if (options.localMode || forceWrite) {
+	if (context.localMode || forceWrite) {
 		const dir = path.dirname(outputPath);
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(outputPath, audioBuffer);

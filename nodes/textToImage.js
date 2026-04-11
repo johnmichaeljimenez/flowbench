@@ -1,15 +1,15 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { generateImage } from "../llm.js";
 
-export default async function textToImage(node, options) {
-	const prompt = await resolveInput(node.input.prompt);
-	const outputPath = await resolveInput(node.input.outputPath);
-	const forceWrite = Boolean(await resolveInput(node.input.forceWrite ?? true));
-	const aspectRatio = await resolveInput(node.input.aspectRatio);
-	const resolution = await resolveInput(node.input.resolution);
-	const testMode = Boolean(await resolveInput(node.input.testMode ?? false));
+export default async function textToImage(node, context) {
+	const prompt = await resolveInput(node.input.prompt, context);
+	const outputPath = await resolveFilePath(node.input.outputPath, context);
+	const forceWrite = Boolean(await resolveInput(node.input.forceWrite ?? true, context));
+	const aspectRatio = await resolveInput(node.input.aspectRatio, context);
+	const resolution = await resolveInput(node.input.resolution, context);
+	const testMode = Boolean(await resolveInput(node.input.testMode ?? false, context));
 
 	const apiKeyEnv = node.input.apiKey ?? "API_KEY_GROK";
 	const baseURLEnv = node.input.baseURL ?? "BASE_URL_GROK";
@@ -37,7 +37,7 @@ export default async function textToImage(node, options) {
 	const imageBase64 = imageData.b64_json || "";
 	const mimeType = "image/png";
 
-	if (options.localMode || forceWrite) {
+	if (context.localMode || forceWrite) {
 		const dir = path.dirname(outputPath);
 		mkdirSync(dir, { recursive: true });
 		const buffer = Buffer.from(imageBase64, "base64");

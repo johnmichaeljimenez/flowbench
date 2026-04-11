@@ -1,4 +1,4 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { execute, batchExecute } from "../db.js";
 
 function escapeIdentifier(name) {
@@ -14,10 +14,10 @@ function escapeIdentifier(name) {
   return '"' + trimmed.replace(/"/g, '""') + '"';
 }
 
-export default async function writeData(node, options) {
-	const dbName = (await resolveInput(node.input.dbName)) || "main";
-	const tableNameRaw = await resolveInput(node.input.tableName);
-	let dataInput = await resolveInput(node.input.data);
+export default async function writeData(node, context) {
+	const dbName = (await resolveInput(node.input.dbName, context)) || "main";
+	const tableNameRaw = await resolveInput(node.input.tableName, context);
+	let dataInput = await resolveInput(node.input.data, context);
 
 	if (!tableNameRaw || dataInput == null) {
 		throw new Error("tableName and data are required for writeData");

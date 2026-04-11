@@ -1,20 +1,20 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { writeFileSync, appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-export default async function writeToTextFile(node, options) {
+export default async function writeToTextFile(node, context) {
 	const forceWrite = node.input.forceWrite === true;
 
-	let content = await resolveInput(node.input.source);
+	let content = await resolveInput(node.input.source, context);
 	if (typeof content !== "string") {
 		content = JSON.stringify(content, null, 2);
 	}
 
 	content = content ?? "";
 
-	let filePath = await resolveInput(node.input.path);
+	const filePath = await resolveFilePath(node.input.path, context);
 
-	if (options.localMode || forceWrite) {
+	if (context.localMode || forceWrite) {
 		const dir = path.dirname(filePath);
 		mkdirSync(dir, { recursive: true });
 
@@ -26,7 +26,7 @@ export default async function writeToTextFile(node, options) {
 		} else {
 			writeFileSync(filePath, content, encoding);
 		}
-		
+
 		console.log(`Write text file to ${filePath}`);
 	} else {
 		console.log(`Local mode disabled for '${node.id}', skipping file writing`);

@@ -1,4 +1,4 @@
-export default async function constantString(node, options) {
+export default async function constantString(node, context) {
 	return {
 		value: node.input.string
 	}

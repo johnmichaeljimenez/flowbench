@@ -1,4 +1,4 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { query } from "../db.js";
 
 function escapeIdentifier(name) {
@@ -14,12 +14,12 @@ function escapeIdentifier(name) {
   return '"' + trimmed.replace(/"/g, '""') + '"';
 }
 
-export default async function loadData(node, options) {
-	const dbName = (await resolveInput(node.input.dbName)) || "main";
-	const tableNameRaw = await resolveInput(node.input.tableName);
-	let columnsInput = await resolveInput(node.input.columns) || "*";
-	const filters = await resolveInput(node.input.filters) || {};
-	let limit = Number(await resolveInput(node.input.limit)) || 100;
+export default async function loadData(node, context) {
+	const dbName = (await resolveInput(node.input.dbName, context)) || "main";
+	const tableNameRaw = await resolveInput(node.input.tableName, context);
+	let columnsInput = await resolveInput(node.input.columns, context) || "*";
+	const filters = await resolveInput(node.input.filters, context) || {};
+	let limit = Number(await resolveInput(node.input.limit, context)) || 100;
 
 	if (!tableNameRaw) throw new Error("tableName is required for loadData");
 

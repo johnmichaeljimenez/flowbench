@@ -1,13 +1,13 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { callLLm } from "../llm.js";
 
-export default async function callLLM(node, options) {
-	const userPrompt = await resolveInput(node.input.userPrompt);
-	const systemPrompt = await resolveInput(node.input.systemPrompt);
-	const maxTokens = await resolveInput(node.input.maxTokens ?? 1024);
-	const temperature = await resolveInput(node.input.temperature ?? 0.5);
-	const testMode = Boolean(await resolveInput(node.input.testMode ?? false));
-	const useTools = Boolean(await resolveInput(node.input.useTools ?? false));
+export default async function callLLM(node, context) {
+	const userPrompt = await resolveInput(node.input.userPrompt, context);
+	const systemPrompt = await resolveInput(node.input.systemPrompt, context);
+	const maxTokens = await resolveInput(node.input.maxTokens ?? 1024, context);
+	const temperature = await resolveInput(node.input.temperature ?? 0.5, context);
+	const testMode = Boolean(await resolveInput(node.input.testMode ?? false, context));
+	const useTools = Boolean(await resolveInput(node.input.useTools ?? false, context));
 
 	const llmResponse = await callLLm({
 		test: testMode,

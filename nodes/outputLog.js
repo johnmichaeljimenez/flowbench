@@ -1,7 +1,7 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 
-export default async function outputLog(node, options) {
-	const result = await resolveInput(node.input.source);
+export default async function outputLog(node, context) {
+	const result = await resolveInput(node.input.source, context);
 	console.log(result);
 
 	return {

@@ -1,9 +1,9 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import xml2js from "xml2js";
 
-export default async function fetchRss(node, options) {
-	const url = await resolveInput(node.input.url);
-	const rawFields = await resolveInput(node.input.fields ?? null);
+export default async function fetchRss(node, context) {
+	const url = await resolveInput(node.input.url, context);
+	const rawFields = await resolveInput(node.input.fields ?? null, context);
 
 	let fieldsConfig = null;
 	if (rawFields) {

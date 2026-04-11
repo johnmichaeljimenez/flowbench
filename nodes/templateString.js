@@ -1,12 +1,12 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 
-export default async function templateString(node, options) {
+export default async function templateString(node, context) {
 
 	const values = await Promise.all(
-		node.input.sources.map(id => resolveInput(id))
+		node.input.sources.map(id => resolveInput(id, context))
 	);
 
-	let result = await resolveInput(node.input.template);
+	let result = await resolveInput(node.input.template, context);
 
 	values.forEach((value, index) => {
 		result = result.replaceAll(`{${index}}`, value ?? "");

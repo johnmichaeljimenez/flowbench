@@ -1,20 +1,19 @@
-import { resolveInput } from "../nodeutils.js";
+import { resolveInput, resolveFilePath } from "../nodeutils.js";
 import { writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { marked } from "marked";
 import puppeteer from "puppeteer";
 
-export default async function exportPDF(node, options) {
+export default async function exportPDF(node, context) {
 	const forceWrite = node.input.forceWrite === true;
 
-	let content = await resolveInput(node.input.source);
+	let content = await resolveInput(node.input.source, context);
 	if (typeof content !== "string") {
 		content = JSON.stringify(content, null, 2);
 	}
 	content = content ?? "";
-
-	let filePath = await resolveInput(node.input.path);
-	const pageSize = (await resolveInput(node.input.pageSize)) || "A4";
+	const filePath = await resolveFilePath(node.input.path, context);
+	const pageSize = (await resolveInput(node.input.pageSize, context)) || "A4";
 
 	let pdfBuffer = null;
 	let base64 = null;
@@ -81,7 +80,7 @@ export default async function exportPDF(node, options) {
 	}
 
 	let writtenFilePath = null;
-	if ((options.localMode || forceWrite) && pdfBuffer) {
+	if ((context.localMode || forceWrite) && pdfBuffer) {
 		try {
 			const dir = path.dirname(filePath);
 			mkdirSync(dir, { recursive: true });
@@ -91,7 +90,7 @@ export default async function exportPDF(node, options) {
 		} catch (err) {
 			console.error(`Failed to write PDF file: ${err.message}`);
 		}
-	} else if (!options.localMode && !forceWrite) {
+	} else if (!context.localMode && !forceWrite) {
 		console.log(`Local mode disabled for '${node.id}', skipping file writing (but base64 generated)`);
 	}
 
