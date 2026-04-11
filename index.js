@@ -132,14 +132,10 @@ app.post('/graphs', async (req, res) => {
         return res.status(400).json({ error: 'Missing "graphName" property' });
     }
 
-    let originalCwd = null;
     try {
         const { graphData, graphDir } = loadGraphByName(graphName);
 
-        originalCwd = process.cwd();
-        process.chdir(graphDir);
-
-        const result = await processGraph(graphData, startNode, false, params);
+        const result = await processGraph(graphData, startNode, false, params, { baseDir: graphDir });
         const output = graphData.output;
         const outputParams = output.cards ?? [];
 
@@ -158,8 +154,6 @@ app.post('/graphs', async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: error.message });
-    } finally {
-        if (originalCwd) process.chdir(originalCwd);
     }
 });
 

@@ -2,14 +2,12 @@ import { readdirSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { fileURLToPath } from 'node:url';
-import { initNodeUtils } from "./nodeutils.js";
 import nodeNotifier from "node-notifier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nodeRegistry = {};
-
 const nodeHandlers = await (async () => {
     const handlers = {};
     const nodesDir = path.join(__dirname, "nodes");
@@ -230,29 +228,33 @@ function applyInputDefaults(nodes) {
     }
 }
 
-export async function processGraph(graphData, startNodeId = "out1", localMode = false, params = {}) {
-    const meta = graphData.meta ?? {
-        notifyOnEnd: false
-    };
-
-    const options = {
-        localMode: localMode
-    };
-
+function createContext(localMode = false, customContext = {}) {
     const now = new Date();
-    const datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
+    let sessionId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
         `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
 
-    function applyTemplates(str) {
-        if (typeof str !== "string") return str;
+    const datenow = sessionId;
+    sessionId = `${sessionId}_${String(now.getMilliseconds()).padStart(3, "0")}`;
 
-        return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
-            if (key === 'datenow') {
-                return datenow;
-            }
-            return `{{:${key}}}`;
-        });
-    }
+    const baseDir = customContext.baseDir || path.join(process.cwd(), "sessions", sessionId);
+    console.log(`New session: ${sessionId} at ${baseDir}`);
+
+    return {
+        localMode: !!localMode,
+        sessionId,
+        baseDir,
+        datenow,
+
+        resolveInput: null,
+        extractFromPath,
+        applySchema,
+
+        ...customContext,
+    };
+}
+
+export async function processGraph(graphData, startNodeId = "out1", localMode = false, params = {}, customContext = {}) {
+    const meta = graphData.meta ?? { notifyOnEnd: false };
 
     const cache = {};
     const nodes = Object.fromEntries(
@@ -260,6 +262,8 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     );
 
     validateGraph(graphData);
+
+    const context = createContext(localMode, customContext);
 
     async function resolveInput(input) {
         if (typeof input !== "string" || !input.startsWith("$")) {
@@ -277,7 +281,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
             if (result == null || typeof result !== "object") {
                 return undefined;
             }
-            return extractFromPath(result, propertyPath);
+            return context.extractFromPath(result, propertyPath);
         }
 
         if (result && typeof result === "object" && "value" in result) {
@@ -286,9 +290,11 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
         return result;
     }
 
+    context.resolveInput = resolveInput;
+
     async function processNode(nodeId) {
         if (nodeId in cache) {
-            console.log(`Cache hit at node '${nodeId}'`); //if cycle is detected, simply return the cached value immediately, since a lot of graphs are expected to reuse and share nodes with each other.
+            console.log(`Cache hit at node '${nodeId}'`);
             return cache[nodeId];
         }
 
@@ -297,11 +303,11 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
             throw new Error(`Node not found: '${nodeId}'`);
         }
 
-        console.log(`   Processing node '${nodeId}' (${node.type})`);
+        console.log(`   [Session ${context.sessionId}] Processing node '${nodeId}' (${node.type})`);
 
         if (node.input) {
             for (const key in node.input) {
-                const value = node.input[key];
+                let value = node.input[key];
                 if (typeof value === "string") {
                     node.input[key] = applyTemplates(value);
                 } else if (value && typeof value === "object" && !Array.isArray(value)) {
@@ -319,24 +325,26 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
             throw new Error(`Unknown node type: ${node.type}`);
         }
 
-        const result = await handler(node, options);
+        const result = await handler(node, context);
         const normalized = result && typeof result === "object" && "value" in result
             ? result
             : { value: result };
-        cache[nodeId] = normalized;
 
+        cache[nodeId] = normalized;
         console.log(`[${nodeId}] ${node.type} completed`);
         return normalized;
     }
 
+    function applyTemplates(str) {
+        if (typeof str !== "string") return str;
+        return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
+            if (key === 'datenow') return context.datenow;
+            return `{{:${key}}}`;
+        });
+    }
+
     applyParams(nodes, params);
     applyInputDefaults(nodes);
-
-    initNodeUtils({
-        resolveInput,
-        extractFromPath,
-        applySchema
-    });
 
     if (graphData.entryPoints && Array.isArray(graphData.entryPoints)) {
         const results = {};
@@ -348,7 +356,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
     }
 
     if (meta.notifyOnEnd)
-        nodeNotifier.notify(`Flowbench done processing!`);
+        nodeNotifier.notify(`Flowbench session ${context.sessionId} done!`);
 
     return cache;
 }
