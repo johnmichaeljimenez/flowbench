@@ -48,6 +48,7 @@ export default async function loadNotionData(node, context) {
 	const databaseId = await resolveInput(node.input.databaseId, context);
 	const mappingRaw = await resolveInput(node.input.mapping ?? null, context);
 	const format = (await resolveInput(node.input.format ?? "json", context)).toLowerCase();
+	const filterRaw = await resolveInput(node.input.query ?? null, context);
 
 	const apiKey = process.env[apiKeyEnvName];
 	if (!apiKey) throw new Error("Valid Notion API key not found in environment variable.");
@@ -60,7 +61,15 @@ export default async function loadNotionData(node, context) {
 		const dataSource = dbResponse.data_sources?.[0];
 		if (!dataSource?.id) throw new Error("No data source found. Make sure your integration has access.");
 
-		const queryResponse = await notion.dataSources.query({ data_source_id: dataSource.id });
+		const queryOptions = {
+			data_source_id: dataSource.id,
+		};
+
+		if (filterRaw && typeof filterRaw === "object" && Object.keys(filterRaw).length > 0) {
+			queryOptions.filter = filterRaw;
+		}
+
+		const queryResponse = await notion.dataSources.query(queryOptions);
 		const pages = queryResponse.results;
 
 		let columnMapping = mappingRaw;
