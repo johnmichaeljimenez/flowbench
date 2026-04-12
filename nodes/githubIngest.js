@@ -26,8 +26,8 @@ export default async function githubIngest(node, context) {
 	if (githubToken)
 		githubToken = process.env[githubToken];
 
-	const whitelist = await resolveStringList(node.input.whitelist);
-	const userBlacklist = await resolveStringList(node.input.blacklist);
+	const whitelist = await resolveStringList(node.input.whitelist, ';', [], context);
+	const userBlacklist = await resolveStringList(node.input.blacklist, ';', [], context);
 	const blacklist = [...new Set([...defaultBlacklist, ...userBlacklist])];
 
 	const headers = {
