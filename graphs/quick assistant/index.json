@@ -64,7 +64,7 @@
 					"grok": "$llmChatGrok",
 					"lmstudio": "$llmChatLMStudio"
 				},
-				"defaultCase": "$llmChatGemini"
+				"defaultSource": "$llmChatGemini"
 			}
 		},
 		{
@@ -103,7 +103,7 @@
 					"display": "LM Studio local server"
 				}
 			],
-			"defaultValue": "true",
+			"defaultValue": "gemini",
 			"required": true,
 			"advanced": true
 		}
