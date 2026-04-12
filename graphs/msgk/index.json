@@ -91,7 +91,7 @@
   },
   "meta": {
     "name": "Mesugaki Chatbot",
-    "description": "PoC of prompt injection defense using a strong character persona + a simple secret-keeping rule in a minimal system prompt.",
+    "description": "Low-stakes PoC of prompt injection defense using a strong character persona + a simple secret-keeping rule in a minimal system prompt.",
     "disableConfirm": true
   }
 }
