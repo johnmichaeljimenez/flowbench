@@ -1,0 +1,211 @@
+{
+	"graph": [
+		{
+			"id": "sysPrompt",
+			"type": "constantString",
+			"input": {
+				"string": "Today is {{:datenow}}. Use the template provided and follow the exact format for report generation. Examine the user's physical details and activity and provide professional, honest but encouraging feedback. If some fields are marked as dash (-) or blank, imply that the user is not sure about what to write and feel free to provide estimates. Prioritize the records from today, and compare it with previous records (if available). If the records are lacking for today, assume that it's all what user has recorded, but feel free to point it out. Do not put any questions, as this is for a report. Present it in a Markdown-formatted document that can be easily understand."
+			}
+		},
+		{
+			"id": "template",
+			"type": "readFromTextFile",
+			"input": {
+				"path": "./template.txt"
+			}
+		},
+		{
+			"id": "dbStats",
+			"type": "loadNotionData",
+			"input": {
+				"databaseId": "",
+				"apiKey": "API_KEY_NOTION",
+				"format": "csv",
+				"mapping": {
+					"Type": "Type",
+					"Value": "Value"
+				}
+			}
+		},
+		{
+			"id": "dbActivity",
+			"type": "loadNotionData",
+			"input": {
+				"databaseId": "",
+				"apiKey": "API_KEY_NOTION",
+				"format": "csv",
+				"mapping": {
+					"Name": "Name",
+					"Reps": "Reps/Count",
+					"Sets": "Sets",
+					"Weight (lbs)": "Weight (lbs)",
+					"Date": "Date",
+					"Notes": "Notes"
+				}
+			}
+		},
+		{
+			"id": "dbDiet",
+			"type": "loadNotionData",
+			"input": {
+				"databaseId": "",
+				"apiKey": "API_KEY_NOTION",
+				"format": "csv",
+				"mapping": {
+					"Food Name": "Food Name",
+					"Calories (per serving)": "Calories (per serving)",
+					"Protein (per serving)": "Protein (per serving)",
+					"Sugar (per serving)": "Sugar (per serving)",
+					"Sodium (per serving)": "Sodium (per serving)",
+					"Fiber (per serving)": "Fiber (per serving)",
+					"Serving count": "Serving count",
+					"Notes": "Notes",
+					"Date Logged": "Date"
+				}
+			}
+		},
+		{
+			"id": "data",
+			"type": "templateString",
+			"input": {
+				"template": "[Stats CSV]\n{0}\n\n\n[Activity CSV]\n{1}\n\n\n[Diet CSV]\n{2}\n\n\n\n[Report Template]\n{3}",
+				"sources": [
+					"$dbStats",
+					"$dbActivity",
+					"$dbDiet",
+					"$template"
+				]
+			}
+		},
+		{
+			"id": "llmOutputGrok",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$data",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.2,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "llmOutputGemini",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$data",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.2,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "llmOutput",
+			"type": "select",
+			"input": {
+				"key": "gemini",
+				"cases": {
+					"grok": "$llmOutputGrok",
+					"gemini": "$llmOutputGemini"
+				},
+				"defaultSource": "$llmOutputGrok"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "outputLog",
+			"input": {
+				"source": "$llmOutput"
+			}
+		},
+		{
+			"id": "pdfReport",
+			"type": "exportPDF",
+			"input": {
+				"source": "$llmOutput",
+				"path": "./.temp/fitness_report_{{:datenow}}.pdf"
+			}
+		}
+	],
+	"entryPoints": [
+		"out1",
+		"pdfReport"
+	],
+	"form": [
+		{
+			"type": "dropdown",
+			"id": "llmOutput.key",
+			"name": "Model Type",
+			"storeLast": true,
+			"data": [
+				{
+					"value": "grok",
+					"display": "Grok 4.1 Reasoning"
+				},
+				{
+					"value": "gemini",
+					"display": "Gemini 3.1 Flash"
+				}
+			],
+			"required": true
+		},
+		{
+			"type": "textfield",
+			"id": "dbStats.databaseId",
+			"name": "Stats database ID",
+			"value": "3400cc8758258008ab14ded1f3293097",
+			"description": "Columns: Type, Value",
+			"required": true,
+			"storeLast": true,
+			"advanced": true
+		},
+		{
+			"type": "textfield",
+			"id": "dbActivity.databaseId",
+			"name": "Activity database ID",
+			"value": "3400cc8758258066bd9bc9a35ea431b8",
+			"description": "Columns: Name, Reps, Sets, Weight (lbs), Date, Notes",
+			"required": true,
+			"storeLast": true,
+			"advanced": true
+		},
+		{
+			"type": "textfield",
+			"id": "dbDiet.databaseId",
+			"name": "Diet database ID",
+			"value": "3400cc87582580dcaba1f3edac1cc09b",
+			"description": "Columns: Food Name, Calories (per serving), Protein (per serving), Sugar (per serving), Sodium (per serving), Fiber (per serving), Serving count, Notes, Date",
+			"required": true,
+			"storeLast": true,
+			"advanced": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "pdfReport.value",
+				"type": "downloadPDF",
+				"name": "PDF",
+				"filename": "fitness-report.pdf"
+			},
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Report",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "Fitness Monitor",
+		"description": "Fitness and nutrition tracker that analyzes your logged activity and diet data from Notion to provide personalized, actionable health insights.",
+		"disableConfirm": true,
+		"notifyOnEnd": true
+	}
+}

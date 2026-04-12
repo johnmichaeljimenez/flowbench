@@ -1,0 +1,14 @@
+(Header)
+Fitness and Lifestyle Report - Day/Month/Year
+
+(Sections)
+User Profile Summary - list
+Strengths - list
+Areas for Improvement - list
+Activity Analysis (Current day) - table
+Diet Analysis (Current day) - table
+Actionable Advice: Next 7 Days - list
+Lifestyle Adjustments - list
+
+(Footer)
+Overall Thoughts
