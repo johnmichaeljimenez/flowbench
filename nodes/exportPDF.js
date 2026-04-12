@@ -108,7 +108,7 @@ export default async function exportPDF(node, context) {
 export const nodeMetadata = {
 	type: "exportPDF",
 	name: "Export PDF",
-	description: "Converts Markdown or plain text to a PDF file and returns base64 data.",
+	description: "Converts text to a PDF file and returns base64 data, with Markdown formatting support.",
 	category: "File",
 	inputs: {
 		source: { type: "string", required: true, supportsRef: true, description: "Text or Markdown content to convert" },
