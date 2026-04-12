@@ -1,6 +1,25 @@
 {
 	"graph": [
 		{
+			"id": "roadmap",
+			"type": "loadNotionData",
+			"input": {
+				"databaseId": "3400cc87582580f1a35fe4b47547ad2b",
+				"apiKey": "API_KEY_NOTION",
+				"format": "csv",
+				"mapping": {
+					"Task Name": "Task Name",
+					"Notes": "Notes"
+				},
+				"query": {
+					"property": "Status",
+					"select": {
+						"equals": "To Do"
+					}
+				}
+			}
+		},
+		{
 			"id": "userQuestion",
 			"type": "constantString",
 			"input": {
@@ -27,9 +46,10 @@
 			"id": "blobQuery",
 			"type": "templateString",
 			"input": {
-				"template": "========[JSON]=========\n\n{0}\n\n\n============[SOURCE CODE]==============\n\n\n\n\n{1}",
+				"template": "===[JSON]===\n\n{0}\n\n\n===[TODO - CSV FORMAT]===\n\n{1}\n\n\n===[SOURCE CODE]===\n\n{2}",
 				"sources": [
 					"$readmeTemplate",
+					"$roadmap",
 					"$blob"
 				]
 			}
