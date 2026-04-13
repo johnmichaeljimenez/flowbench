@@ -2,7 +2,7 @@ import { resolveInput } from "../nodeutils.js";
 
 export default async function replaceString(node, context) {
 	let text = await resolveInput(node.input.text, context) || "";
-	const replacements = await resolveInput(node.input.replacements, context) || [];
+	let replacements = await resolveInput(node.input.replacements, context) || [];
 	const ignoreCase = await resolveInput(node.input.ignoreCase, context) ?? false;
 	const useRegex = await resolveInput(node.input.useRegex, context) ?? false;
 
