@@ -34,7 +34,7 @@ export default async function callLLM(node, context) {
 export const nodeMetadata = {
 	type: "callLLM",
 	name: "Call LLM",
-	description: "Sends prompts to Grok, Gemini, LM Studio models or any other OpenAI-compatible LLM API and returns the response.",
+	description: "Sends prompts to Grok, Gemini, Groq, LM Studio models or any other OpenAI-compatible LLM API and returns the response.",
 	category: "LLM",
 	inputs: {
 		systemPrompt: { type: "string", required: true, supportsRef: true, description: "System prompt", default: "You are a helpful assistant." },
