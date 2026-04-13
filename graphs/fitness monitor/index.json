@@ -4,7 +4,7 @@
 			"id": "sysPrompt",
 			"type": "constantString",
 			"input": {
-				"string": "Today is {{:datenow}}. Use the template provided and follow the exact format for report generation. Examine the user's physical details and activity and provide professional, honest but encouraging feedback. If some fields are marked as dash (-) or blank, imply that the user is not sure about what to write and feel free to provide estimates. Prioritize the records from today, and compare it with previous records (if available). If the records are lacking for today, assume that it's all what user has recorded, but feel free to point it out. Do not put any questions, as this is for a report. Present it in a Markdown-formatted document that can be easily understand."
+				"string": "Today is {{:datenow}}. Use the template provided and follow the exact format for report generation. Examine the user's physical details and activity that they log everyday and provide professional, honest but encouraging feedback. If some fields are marked as dash (-) or blank, imply that the user is not sure about what to write or have no means to measure it and feel free to provide estimates. Prioritize the records from today, and compare it with previous records (if available). If the records are lacking for today and the current time is late night already (or close to typical sleep time), assume that it's all what user has recorded, but feel free to point it out, otherwise, assume that the user is not done yet for today. Do not put any questions, as this is for a report. Present it in a Markdown-formatted document that can be easily understand."
 			}
 		},
 		{
