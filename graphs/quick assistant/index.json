@@ -41,6 +41,19 @@
 			}
 		},
 		{
+			"id": "llmChatGroqOSS",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$sysPrompt",
+				"userPrompt": "$userInput",
+				"maxTokens": 4096,
+				"temperature": 0.3,
+				"apiKey": "API_KEY_GROQ",
+				"baseURL": "BASE_URL_GROQ",
+				"model": "openai/gpt-oss-120b"
+			}
+		},
+		{
 			"id": "llmChatGrok",
 			"type": "callLLM",
 			"input": {
@@ -62,6 +75,7 @@
 				"cases": {
 					"gemini": "$llmChatGemini",
 					"grok": "$llmChatGrok",
+					"groq": "$llmChatGroqOSS",
 					"lmstudio": "$llmChatLMStudio"
 				},
 				"defaultSource": "$llmChatGemini"
@@ -99,6 +113,10 @@
 					"display": "Grok 4.1 Reasoning + tools"
 				},
 				{
+					"value": "groq",
+					"display": "GPT OSS 120B (Groq)"
+				},
+				{
 					"value": "lmstudio",
 					"display": "LM Studio local server"
 				}
@@ -125,7 +143,7 @@
 	},
 	"meta": {
 		"name": "Quick Assistant",
-		"description": "Google Gemini 3.1 Flash (lite-preview), Grok 4.1 (reasoning + tools), an LM Studio local server with image and chart drawing via SVG (experimental).",
+		"description": "Google Gemini 3.1 Flash (lite-preview), Grok 4.1 (reasoning + tools), GPT-OSS-120B (Groq) and LM Studio local server with image and chart drawing via SVG (experimental).",
 		"disableConfirm": true,
 		"notifyOnEnd": true
 	}
