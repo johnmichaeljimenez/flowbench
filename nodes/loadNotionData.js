@@ -1,30 +1,50 @@
 import { resolveInput } from "../nodeutils.js";
 import { Client } from "@notionhq/client";
 
-function cleanPropertyValue(prop) {
+function cleanPropertyValue(prop, timezone) {
 	if (!prop || typeof prop !== "object" || !prop.type) return null;
 
 	switch (prop.type) {
 		case "title":
 		case "rich_text":
-			return prop[prop.type].map(t => t.plain_text).join("") || null;
+			return prop[prop.type]?.map(t => t.plain_text).join("") ?? null;
 		case "status":
 		case "select":
 			return prop[prop.type]?.name ?? null;
 		case "multi_select":
-			return prop.multi_select.map(item => item.name).join(", ") || null;
+			return prop.multi_select?.map(item => item.name).join(", ") ?? null;
 		case "date":
 			return prop.date?.start ?? null;
 		case "people":
-			return prop.people.map(p => p.name || p.email).join(", ") || null;
+			return prop.people?.map(p => p.name || p.email).join(", ") ?? null;
 		case "number":
-			return prop.number;
+			return prop.number ?? null;
 		case "checkbox":
-			return prop.checkbox;
+			return prop.checkbox ?? null;
+		case "created_time":
+		case "last_edited_time":
+			const timeStr = prop[prop.type] ?? null;
+			if (!timeStr) return null;
+			if (timezone === 'UTC') return timeStr;
+
+			const date = new Date(timeStr);
+			if (isNaN(date.getTime())) return timeStr;
+
+			const formatter = new Intl.DateTimeFormat('sv-SE', {
+				timeZone: timezone,
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false
+			});
+			return formatter.format(date).replace(' ', 'T');
 		case "url":
 		case "email":
 		case "phone_number":
-			return prop[prop.type];
+			return prop[prop.type] ?? null;
 		default:
 			return prop[prop.type] !== undefined ? JSON.stringify(prop[prop.type]) : null;
 	}
@@ -49,6 +69,8 @@ export default async function loadNotionData(node, context) {
 	const mappingRaw = await resolveInput(node.input.mapping ?? null, context);
 	const format = (await resolveInput(node.input.format ?? "json", context)).toLowerCase();
 	const filterRaw = await resolveInput(node.input.query ?? null, context);
+
+	const timezone = context?.timezone || 'UTC';
 
 	const apiKey = process.env[apiKeyEnvName];
 	if (!apiKey) throw new Error("Valid Notion API key not found in environment variable.");
