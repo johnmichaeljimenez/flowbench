@@ -126,7 +126,7 @@ app.get('/graphs/viz', (req, res) => {
 });
 
 app.post('/graphs', async (req, res) => {
-    const { graphName, startNode = "out1", params = {} } = req.body;
+    const { graphName, startNode = "out1", timezone, params = {} } = req.body;
 
     if (!graphName) {
         return res.status(400).json({ error: 'Missing "graphName" property' });
@@ -135,7 +135,7 @@ app.post('/graphs', async (req, res) => {
     try {
         const { graphData, graphDir } = loadGraphByName(graphName);
 
-        const result = await processGraph(graphData, startNode, false, params, { baseDir: graphDir });
+        const result = await processGraph(graphData, startNode, false, params, { baseDir: graphDir, timezone: timezone });
         const output = graphData.output;
         const outputParams = output.cards ?? [];
 

@@ -627,6 +627,7 @@ async function runGraph(event) {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				graphName: currentGraphName,
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 				params: params,
 				startNode: "out1"
 			})
