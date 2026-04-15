@@ -7,6 +7,9 @@
     "start": "node app.js",
     "dev": "nodemon index.js"
   },
+  "nodemonConfig": {
+    "ignore": ["graphs/*"]
+  },
   "keywords": [],
   "author": "johnmichaeljimenez",
   "license": "MIT",
