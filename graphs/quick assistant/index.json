@@ -64,7 +64,7 @@
 				"apiKey": "API_KEY_GROK",
 				"baseURL": "BASE_URL_GROK",
 				"model": "grok-4-1-fast-reasoning",
-				"useTools": true
+				"useTools": false
 			}
 		},
 		{
@@ -110,7 +110,7 @@
 				},
 				{
 					"value": "grok",
-					"display": "Grok 4.1 Reasoning + tools"
+					"display": "Grok 4.1 Reasoning"
 				},
 				{
 					"value": "groq",
@@ -122,6 +122,25 @@
 				}
 			],
 			"defaultValue": "gemini",
+			"required": true,
+			"advanced": true
+		},
+		{
+			"type": "dropdown",
+			"id": "llmChatGrok.useTools",
+			"name": "Use Realtime Web and X search (Grok)",
+			"storeLast": true,
+			"data": [
+				{
+					"value": true,
+					"display": "Yes"
+				},
+				{
+					"value": false,
+					"display": "No"
+				}
+			],
+			"defaultValue": true,
 			"required": true,
 			"advanced": true
 		}
