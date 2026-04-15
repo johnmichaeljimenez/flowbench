@@ -58,7 +58,7 @@ export async function callLLm({
 
   const client = new OpenAI({ apiKey, baseURL });
 
-  if (useTools) {
+  if (useTools && baseURL.toLowerCase().includes("x.ai")) {
     const completion = await client.responses.create({
       model,
       input: [
