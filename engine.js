@@ -1,9 +1,11 @@
-import { readdirSync } from "node:fs";
+import { readdirSync, writeFileSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { fileURLToPath } from 'node:url';
 import nodeNotifier from "node-notifier";
 import { randomUUID } from 'node:crypto';
+import { execSync } from "node:child_process";
+import { tmpdir } from "node:os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,7 +83,7 @@ export function validateGraph(graphData) {
     return true;
 }
 
-export function generateMermaidViz(graphData) {
+export function generateMermaidViz(graphData, pngPath) {
     if (!validateGraph(graphData)) {
         return;
     }
@@ -154,6 +156,19 @@ flowchart TD\n`;
     });
 
     console.log(mermaid);
+    if (pngPath && pngPath.trim()) {
+        const tempMmd = path.join(tmpdir(), `graph-${Date.now()}.mmd`);
+        writeFileSync(tempMmd, mermaid);
+        try {
+            execSync(`mmdc -i ${tempMmd} -o ${pngPath} -t default -w 1200 -H 800`, { stdio: 'inherit' });
+            unlinkSync(tempMmd);
+            console.log(`PNG saved to ${pngPath}`);
+        } catch (err) {
+            console.error('PNG generation failed:', err.message);
+            unlinkSync(tempMmd);
+        }
+    }
+
     return mermaid;
 }
 
@@ -242,7 +257,7 @@ function createContext(localMode = false, customContext = {}) {
 
     return {
         localMode: !!localMode,
-        timezone : timezone,
+        timezone: timezone,
         sessionId,
         baseDir,
         datenow,
