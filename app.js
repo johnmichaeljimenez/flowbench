@@ -3,7 +3,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import dotenv from "dotenv";
-import { processGraph } from "./engine.js";
+import { processGraph, generateMermaidViz } from "./engine.js";
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,22 +15,8 @@ dotenv.config({
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-    console.error('Usage: node app.js <graph.json> [startNode] [--<nodeId>.<inputField> <value>]...');
+    console.error('Usage: node app.js <graph.json> [startNode] [--viz] [--. ]...');
     process.exit(1);
-}
-
-const params = {};
-let startNodeId = "out1";
-let paramIndex = 1;
-if (args.length > 1 && !args[1].startsWith('--')) {
-    startNodeId = args[1];
-    paramIndex = 2;
-}
-for (let i = paramIndex; i < args.length; i += 2) {
-    const keyArg = args[i];
-    if (keyArg.startsWith('--') && i + 1 < args.length) {
-        params[keyArg.slice(2)] = args[i + 1];
-    }
 }
 
 const graphPath = path.resolve(args[0]);
@@ -40,13 +26,48 @@ if (!existsSync(graphPath)) {
 }
 
 process.chdir(path.dirname(graphPath));
-
 const graphData = JSON.parse(readFileSync(graphPath, "utf-8"));
+
+let viz = false;
+let startNodeId = "out1";
+const params = {};
+
+for (let i = 1; i < args.length;) {
+    const arg = args[i];
+    if (arg === '--viz') {
+        viz = true;
+        i++;
+        continue;
+    }
+    if (!arg.startsWith('--')) {
+        if (startNodeId === "out1") {
+            startNodeId = arg;
+        } else {
+            console.error('Unexpected positional argument after startNode');
+            process.exit(1);
+        }
+        i++;
+        continue;
+    }
+    // --key value
+    const key = arg.slice(2);
+    i++;
+    if (i >= args.length) {
+        console.error(`Missing value for ${arg}`);
+        process.exit(1);
+    }
+    params[key] = args[i];
+    i++;
+}
 
 async function main() {
     try {
-        const output = await processGraph(graphData, startNodeId, true, params);
-        console.log(JSON.stringify(output, null, 2));
+        if (viz) {
+            generateMermaidViz(graphData, "./graph.png");
+        } else {
+            const output = await processGraph(graphData, startNodeId, true, params);
+            console.log(JSON.stringify(output, null, 2));
+        }
         process.exit(0);
     } catch (error) {
         console.error(error.message);
