@@ -1,0 +1,174 @@
+{
+	"graph": [
+		{
+			"id": "userQuestion",
+			"type": "constantString",
+			"input": {
+				"string": ""
+			}
+		},
+		{
+			"id": "blob",
+			"type": "loadTextBlob",
+			"input": {
+				"path": "",
+				"whitelist": ".js;.json;.txt",
+				"blacklist": ".gitignore;node_modules;.env;package-lock.json;reports;examples"
+			}
+		},
+		{
+			"id": "blobQuery",
+			"type": "templateString",
+			"input": {
+				"template": "{0}\n\n\n{1}",
+				"sources": [
+					"$userQuestion",
+					"$blob"
+				]
+			}
+		},
+		{
+			"id": "llmChatGemini",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$userQuestion",
+				"userPrompt": "$blob",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GEMINI",
+				"baseURL": "BASE_URL_GEMINI",
+				"model": "gemini-3.1-flash-lite-preview"
+			}
+		},
+		{
+			"id": "llmChatGrok",
+			"type": "callLLM",
+			"input": {
+				"systemPrompt": "$userQuestion",
+				"userPrompt": "$blob",
+				"testMode": false,
+				"maxTokens": 4096,
+				"temperature": 0.5,
+				"apiKey": "API_KEY_GROK",
+				"baseURL": "BASE_URL_GROK",
+				"model": "grok-4-1-fast-reasoning"
+			}
+		},
+		{
+			"id": "llmOutput",
+			"type": "select",
+			"input": {
+				"key": "gemini",
+				"cases": {
+					"gemini": "$llmChatGemini",
+					"grok": "$llmChatGrok"
+				},
+				"defaultSource": "$llmChatGemini"
+			}
+		},
+		{
+			"id": "textBlobOnly",
+			"type": "choose",
+			"input": {
+				"condition": true,
+				"trueSource": "$blobQuery",
+				"falseSource": "$llmOutput"
+			}
+		},
+		{
+			"id": "out1",
+			"type": "writeToTextFile",
+			"input": {
+				"source": "$textBlobOnly",
+				"path": "./.temp/reports/help-{{:datenow}}.md",
+				"append": false,
+				"encoding": "utf-8"
+			}
+		}
+	],
+	"form": [
+		{
+			"id": "userQuestion.string",
+			"name": "Enter inquiry",
+			"value": null,
+			"type": "textarea",
+			"storeLast": true,
+			"required": true
+		},
+		{
+			"id": "blob.path",
+			"name": "Project root folder",
+			"value": "E:/projects/flowbench",
+			"type": "textfield",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"id": "blob.blacklist",
+			"name": "Blacklist",
+			"value": "reports",
+			"type": "textfield",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"id": "blob.whitelist",
+			"name": "Whitelist",
+			"value": ".js;.json;.html",
+			"type": "textfield",
+			"required": true,
+			"storeLast": true
+		},
+		{
+			"type": "dropdown",
+			"id": "textBlobOnly.condition",
+			"name": "Text Blob only",
+			"storeLast": true,
+			"data": [
+				{
+					"value": "true",
+					"display": "Yes"
+				},
+				{
+					"value": "false",
+					"display": "No"
+				}
+			],
+			"required": true
+		},
+		{
+			"type": "dropdown",
+			"id": "llmOutput.key",
+			"name": "Model Type",
+			"storeLast": true,
+			"data": [
+				{
+					"value": "gemini",
+					"display": "Gemini 3.1 Flash"
+				},
+				{
+					"value": "grok",
+					"display": "Grok 4.1 Reasoning"
+				}
+			],
+			"defaultValue": "gemini",
+			"required": true
+		}
+	],
+	"output": {
+		"cards": [
+			{
+				"id": "out1.value",
+				"type": "text",
+				"name": "Response",
+				"format": "markdown"
+			}
+		]
+	},
+	"meta": {
+		"name": "Coding Assistant",
+		"description": "A configurable coding assistant that scans your project files to provide context-aware analysis and code generation using your choice of Gemini 3.1 or Grok 4.1 models.",
+		"notifyOnEnd": true
+	}
+}
