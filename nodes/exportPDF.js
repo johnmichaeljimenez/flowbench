@@ -19,64 +19,82 @@ export default async function exportPDF(node, context) {
 	let base64 = null;
 	let error = null;
 
-	try {
-		const htmlContent = marked(content);
-		const fullHtml = `<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="UTF-8">
-			<style>
-				body {
-					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-					line-height: 1.6;
-					padding: 2rem;
-					max-width: 800px;
-					margin: 0 auto;
-				}
-				pre, code {
-					background-color: #f4f4f4;
-					border-radius: 4px;
-				}
-				pre {
-					padding: 1rem;
-					overflow-x: auto;
-				}
-				code {
-					padding: 0.2rem 0.4rem;
-				}
-				table {
-					border-collapse: collapse;
-					width: 100%;
-				}
-				th, td {
-					border: 1px solid #ddd;
-					padding: 8px;
-					text-align: left;
-				}
-				th {
-					background-color: #f2f2f2;
-				}
-			</style>
-		</head>
-		<body>${htmlContent}</body>
-		</html>`;
+	const MAX_RETRIES = 3; //it's literally expensive when this node fail when chained from LLM (ex. error code 3221226505)
+	let lastError = null;
 
-		const browser = await puppeteer.launch({ headless: "new" });
-		const page = await browser.newPage();
-		await page.setContent(fullHtml, { waitUntil: "networkidle0" });
+	const htmlContent = marked(content);
+	const fullHtml = `<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="UTF-8">
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+				line-height: 1.6;
+				padding: 2rem;
+				max-width: 800px;
+				margin: 0 auto;
+			}
+			pre, code {
+				background-color: #f4f4f4;
+				border-radius: 4px;
+			}
+			pre {
+				padding: 1rem;
+				overflow-x: auto;
+			}
+			code {
+				padding: 0.2rem 0.4rem;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%;
+			}
+			th, td {
+				border: 1px solid #ddd;
+				padding: 8px;
+				text-align: left;
+			}
+			th {
+				background-color: #f2f2f2;
+			}
+		</style>
+	</head>
+	<body>${htmlContent}</body>
+	</html>`;
 
-		pdfBuffer = await page.pdf({
-			format: pageSize,
-			printBackground: true,
-			margin: { top: "1cm", bottom: "1cm", left: "1cm", right: "1cm" }
-		});
+	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+		try {
+			const browser = await puppeteer.launch({ headless: "new" });
+			const page = await browser.newPage();
+			await page.setContent(fullHtml, { waitUntil: "networkidle0" });
 
-		await browser.close();
+			pdfBuffer = await page.pdf({
+				format: pageSize,
+				printBackground: true,
+				margin: { top: "1cm", bottom: "1cm", left: "1cm", right: "1cm" }
+			});
 
-		base64 = Buffer.from(pdfBuffer).toString('base64');
-	} catch (err) {
-		console.error(`Failed to generate PDF: ${err.message}`);
-		error = err;
+			await browser.close();
+
+			console.log(`PDF generated successfully on attempt ${attempt}`);
+			lastError = null;
+			break;
+
+		} catch (err) {
+			lastError = err;
+			console.error(`PDF generation attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`);
+
+			if (attempt < MAX_RETRIES) {
+				const delay = 1000 * attempt; //politeness
+				console.log(`   Retrying in ${delay}ms...`);
+				await new Promise(r => setTimeout(r, delay));
+			}
+		}
+	}
+
+	if (lastError) {
+		error = lastError;
 	}
 
 	let writtenFilePath = null;
