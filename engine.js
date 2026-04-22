@@ -247,6 +247,7 @@ function applyInputDefaults(nodes) {
 function createContext(localMode = false, customContext = {}) {
     const now = new Date();
     const timezone = customContext.timezone ?? "UTC";
+    const localSessionId = customContext.localSessionId ?? (randomUUID?.() || datenow);
 
     const datenow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_` +
         `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
@@ -257,8 +258,9 @@ function createContext(localMode = false, customContext = {}) {
 
     return {
         localMode: !!localMode,
-        timezone: timezone,
+        timezone,
         sessionId,
+        localSessionId,
         baseDir,
         datenow,
 
@@ -357,6 +359,7 @@ export async function processGraph(graphData, startNodeId = "out1", localMode = 
         return str.replaceAll(/{{:(\w+)}}/g, (_, key) => {
             if (key === 'datenow') return context.datenow;
             if (key === 'sessionId') return context.sessionId;
+            if (key === 'localSessionId') return context.localSessionId;
             if (key === 'timezone') return context.timezone;
             return `{{:${key}}}`;
         });

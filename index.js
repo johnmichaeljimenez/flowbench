@@ -4,6 +4,7 @@ import path from "node:path";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { processGraph, extractFromPath, validateGraph, generateMermaidViz } from "./engine.js";
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 import generateForm from './forms.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -168,9 +169,16 @@ app.post('/graphs/form', (req, res) => {
         validateGraph(graphData);
 
         const formHtml = generateForm(graphData.form ?? []);
+        const localSessionId = randomUUID?.() || datenow;
+
+        const meta = {
+            localSessionId,
+            ...(graphData.meta ?? {})
+        };
+
         res.json({
             formHtml,
-            meta: graphData.meta ?? {}
+            meta: meta
         });
     } catch (error) {
         console.error(error);

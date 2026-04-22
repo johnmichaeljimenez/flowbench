@@ -628,6 +628,7 @@ async function runGraph(event) {
 			body: JSON.stringify({
 				graphName: currentGraphName,
 				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+				localSessionId: workingData.meta.localSessionId,
 				params: params,
 				startNode: "out1"
 			})
