@@ -65,6 +65,18 @@
 			}
 		},
 		{
+			"id": "dataNotion",
+			"type": "templateString",
+			"input": {
+				"template": "[Stats CSV]\n{0}\n\n\n[Activity CSV]\n{1}\n\n\n[Diet CSV]\n{2}",
+				"sources": [
+					"$dbStats",
+					"$dbActivity",
+					"$dbDiet"
+				]
+			}
+		},
+		{
 			"id": "data",
 			"type": "templateString",
 			"input": {
@@ -118,17 +130,29 @@
 			}
 		},
 		{
+			"id": "query",
+			"type": "select",
+			"input": {
+				"key": "no",
+				"cases": {
+					"yes": "$llmOutput",
+					"no": "$dataNotion"
+				},
+				"defaultSource": "$llmOutput"
+			}
+		},
+		{
 			"id": "out1",
 			"type": "outputLog",
 			"input": {
-				"source": "$llmOutput"
+				"source": "$query"
 			}
 		},
 		{
 			"id": "pdfReport",
 			"type": "exportPDF",
 			"input": {
-				"source": "$llmOutput",
+				"source": "$query",
 				"path": "./.temp/fitness_report_{{:datenow}}.pdf"
 			}
 		}
@@ -184,6 +208,23 @@
 			"required": true,
 			"storeLast": true,
 			"advanced": true
+		},
+		{
+			"type": "dropdown",
+			"id": "query.key",
+			"name": "Output Type",
+			"storeLast": true,
+			"advanced": true,
+			"data": [
+				{
+					"value": "yes",
+					"display": "Full"
+				},
+				{
+					"value": "no",
+					"display": "Notion Only"
+				}
+			]
 		}
 	],
 	"output": {
