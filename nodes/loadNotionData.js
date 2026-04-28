@@ -69,6 +69,7 @@ export default async function loadNotionData(node, context) {
 	const mappingRaw = await resolveInput(node.input.mapping ?? null, context);
 	const format = (await resolveInput(node.input.format ?? "json", context)).toLowerCase();
 	const filterRaw = await resolveInput(node.input.query ?? null, context);
+	//TODO: add sorting
 
 	const timezone = context?.timezone || 'UTC';
 
@@ -85,14 +86,31 @@ export default async function loadNotionData(node, context) {
 
 		const queryOptions = {
 			data_source_id: dataSource.id,
+			page_size: 100,
 		};
 
 		if (filterRaw && typeof filterRaw === "object" && Object.keys(filterRaw).length > 0) {
 			queryOptions.filter = filterRaw;
 		}
 
-		const queryResponse = await notion.dataSources.query(queryOptions);
-		const pages = queryResponse.results;
+		let pages = [];
+		let hasMore = true;
+		let nextCursor = undefined;
+
+		while (hasMore) {
+			if (nextCursor) {
+				queryOptions.start_cursor = nextCursor;
+			} else {
+				delete queryOptions.start_cursor;
+			}
+
+			const queryResponse = await notion.dataSources.query(queryOptions);
+
+			pages = pages.concat(queryResponse.results || []);
+
+			hasMore = queryResponse.has_more || false;
+			nextCursor = queryResponse.next_cursor;
+		}
 
 		let columnMapping = mappingRaw;
 		if (!columnMapping || typeof columnMapping !== "object") {
@@ -108,7 +126,7 @@ export default async function loadNotionData(node, context) {
 			const row = {};
 			Object.entries(columnMapping).forEach(([outputKey, notionPropName]) => {
 				const prop = page.properties[notionPropName];
-				row[outputKey] = cleanPropertyValue(prop);
+				row[outputKey] = cleanPropertyValue(prop, timezone);
 			});
 			return row;
 		});
@@ -131,7 +149,7 @@ export default async function loadNotionData(node, context) {
 export const nodeMetadata = {
 	type: "loadNotionData",
 	name: "Load Notion Data",
-	description: "Fetches Notion database rows, flattens properties into clean columns (SQL-style), and supports JSON/CSV/TSV output.",
+	description: "Fetches all Notion database rows, flattens properties into clean columns (SQL-style), and supports JSON/CSV/TSV output.",
 	category: "Integration",
 	inputs: {
 		apiKey: {
