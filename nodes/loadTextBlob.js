@@ -14,6 +14,7 @@ export default async function loadTextBlob(node, context) {
 	const maxFileSizeMB = await resolveInput(node.input.maxFileSizeMB ?? 1, context);
 	const maxTotalSizeMB = await resolveInput(node.input.maxTotalSizeMB ?? 1, context);
 	const maxDepth = await resolveInput(node.input.maxDepth ?? 10, context);
+	const includeStructure = await resolveInput(node.input.includeStructure ?? false, context);
 
 	const whitelist = await resolveStringList(node.input.whitelist, ';', [], context);
 	const userBlacklist = await resolveStringList(node.input.blacklist, ';', [], context);
@@ -23,6 +24,55 @@ export default async function loadTextBlob(node, context) {
 	let totalSize = 0;
 	const maxFileSize = maxFileSizeMB * 1024 * 1024;
 	const maxTotalSize = maxTotalSizeMB * 1024 * 1024;
+
+	function buildFileTree(filePaths) {
+		const root = { dirs: {}, files: [] };
+		for (const filePath of filePaths) {
+			const parts = filePath.split('/');
+			let current = root;
+			for (let i = 0; i < parts.length - 1; i++) {
+				const part = parts[i];
+				if (!current.dirs[part]) {
+					current.dirs[part] = { dirs: {}, files: [] };
+				}
+				current = current.dirs[part];
+			}
+			if (parts.length > 0) {
+				const fileName = parts[parts.length - 1];
+				if (fileName) current.files.push(fileName);
+			}
+		}
+		return root;
+	}
+
+	function formatDirectoryTree(rootNode, rootName) {
+		const lines = [];
+		lines.push(rootName + '/');
+		function printChildren(node, prefix) {
+			const entries = [];
+			const dirNames = Object.keys(node.dirs || {}).sort((a, b) => a.localeCompare(b));
+			for (const name of dirNames) {
+				entries.push({ name, type: 'dir', child: node.dirs[name] });
+			}
+			const fileNames = [...(node.files || [])].sort((a, b) => a.localeCompare(b));
+			for (const name of fileNames) {
+				entries.push({ name, type: 'file' });
+			}
+			for (let i = 0; i < entries.length; i++) {
+				const entry = entries[i];
+				const isLast = i === entries.length - 1;
+				const connector = isLast ? '└── ' : '├── ';
+				const suffix = entry.type === 'dir' ? '/' : '';
+				lines.push(prefix + connector + entry.name + suffix);
+				if (entry.type === 'dir') {
+					const newPrefix = prefix + (isLast ? '    ' : '│   ');
+					printChildren(entry.child, newPrefix);
+				}
+			}
+		}
+		printChildren(rootNode, '');
+		return lines.join('\n') + '\n';
+	}
 
 	async function walk(dir, depth = 0) {
 		if (depth > maxDepth) return;
@@ -60,17 +110,35 @@ export default async function loadTextBlob(node, context) {
 
 	await walk(basePath);
 
-	let output = "=====FILE START=====\n";
-	for (const file of files) {
+	let output = "";
+	if (includeStructure) {
+		if (files.length === 0) {
+			output += "=====STRUCTURE START=====\n";
+			output += "No matching files available.\n";
+			output += "=====STRUCTURE END=====\n\n";
+		} else {
+			const relativeFiles = files.map(f => path.relative(basePath, f).split(path.sep).join('/'));
+			const tree = buildFileTree(relativeFiles);
+			const rootName = path.basename(basePath) || 'root';
+			const treeStr = formatDirectoryTree(tree, rootName);
+			output += "=====STRUCTURE START=====\n";
+			output += treeStr;
+			output += "=====STRUCTURE END=====\n\n";
+		}
+	}
+
+	output += "=====FILE START=====\n";
+	for (const absPath of files) {
 		try {
-			const content = await fs.readFile(file, "utf-8");
+			const content = await fs.readFile(absPath, "utf-8");
 			if (content.includes("\0")) continue;
 
-			output += `===${file}===\n`;
+			const relPath = path.relative(basePath, absPath).split(path.sep).join('/');
+			output += `===${relPath}===\n`;
 			output += content;
 			output += "\n\n";
 		} catch (err) {
-			console.warn(`Failed to read ${file}: ${err.message}`);
+			console.warn(`Failed to read ${absPath}: ${err.message}`);
 		}
 	}
 	output += "=====FILE END=====";
@@ -86,6 +154,7 @@ export const nodeMetadata = {
 	category: "File",
 	inputs: {
 		path: { type: "string", required: true, supportsRef: true, description: "Root folder path" },
+		includeStructure: { type: "boolean", required: false, default: false, description: "Include a file/folder tree structure of the scanned files at the start of output" },
 		whitelist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names  separated by semicolon e.g. .js;.json;.md" },
 		blacklist: { type: "string", required: false, supportsRef: true, description: "list of file extensions and folder names separated by semicolon e.g. .js;.json;.md" },
 		maxFileSizeMB: { type: "number", required: false, default: 1, description: "Skip individual files larger than this" },
