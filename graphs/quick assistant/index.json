@@ -139,7 +139,7 @@
 					"display": "LM Studio local server"
 				}
 			],
-			"defaultValue": "gemini",
+			"defaultValue": "groqOSS",
 			"required": true,
 			"advanced": true
 		},
